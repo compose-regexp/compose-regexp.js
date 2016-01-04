@@ -1,3 +1,9 @@
+# DEPRECATION NOTICE
+
+This module was moved to [compose-regexp](github.com/pygy/compose-regexp.js).
+
+----
+
 # sane-regexp.js
 
 A saner way to build and compose complex regular expressions in JavaScript. 
