@@ -1,0 +1,35 @@
+{
+  "name": "sane-regexp",
+  "version": "0.1.0",
+  "description": "A saner way to build complex regular expressions",
+  "main": "sane-regexp.js",
+  "jsnext:main": "sane-regexp.es6.js",
+  "scripts": {
+    "test": "node tests/tests.js",
+    "build": "npm run rollup && npm run uglify && npm run gzip",
+    "rollup": "rollup sane-regexp.es6.js -o sane-regexp.js -f cjs",
+    "uglify": "npm-run uglifyjs sane-regexp.js -cm > dist/sane-regexp.min.js",
+    "gzip": "cat dist/sane-regexp.min.js | gzip -9 > dist/sane-regexp.min.js.gz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pygy/sane-regexp.js.git"
+  },
+  "keywords": [
+    "sane",
+    "regexp",
+    "builder",
+    "regular",
+    "expression"
+  ],
+  "author": "Pierre-Yves Gérardy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pygy/sane-regexp.js/issues"
+  },
+  "homepage": "https://github.com/pygy/sane-regexp.js#readme",
+  "devDependencies": {
+    "rollup": "^0.24.0",
+    "uglify-js": "^2.6.1"
+  }
+}
