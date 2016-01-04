@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node tests/tests.js",
     "build": "npm run rollup && npm run uglify && npm run gzip",
-    "rollup": "rollup sane-regexp.es6.js -o sane-regexp.js -f cjs",
+    "rollup": "rollup sane-regexp.es6.js -o sane-regexp.js -f umd -n saneRegexp -u sane-regexp",
     "uglify": "npm-run uglifyjs sane-regexp.js -cm > dist/sane-regexp.min.js",
     "gzip": "cat dist/sane-regexp.min.js | gzip -9 > dist/sane-regexp.min.js.gz"
   },
