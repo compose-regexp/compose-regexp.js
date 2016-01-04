@@ -1,8 +1,10 @@
-# sane-regexp.js
+# compose-regexp.js
 
-A saner way to build and compose complex regular expressions in JavaScript. 
+A set of functions to build and compose complex regular expressions in JavaScript. 
 
-Works nicely with [verbal expressions](https://github.com/VerbalExpressions/JSVerbalExpressions).
+Works nicely with [verbal expressions](https://github.com/VerbalExpressions/JSVerbalExpressions), even though the target user is likely different.
+
+The goal of this library is to enable advanced RegExp users to write maintainable lexers and parsers. A reasonable understanding of the parsing model of regexps is a prerequisite.
 
 ## Usage
 
@@ -170,6 +172,10 @@ whooops = sequence(
 In `whoops`, the `ref(1)` in stringMatcher actually refers to `foo`, not the opening quote.
 
 Fixing this would require an approach far more complex than what I'm doing now (concat the regexps source).
+
+## Notes
+
+This tool is very simple under the hood and its output is not optimised for either size or speed. For example, you may find that some non-capturing groups are superfluous. Getting rid of these would require parsing the regexps under the hood to simplify them, and it is beyond the scope of this project at this time.
 
 ## License MIT
 
