@@ -9,14 +9,14 @@ The goal of this library is to enable advanced RegExp users to write maintainabl
 ## Usage
 
 ```Shell
-$ npm install --save sane-regexp
+$ npm install --save compose-regexp
 ```
 
 ```JS
 import {
     sequence, either, capture,
     ref, greedy
-} from "sane-regexp"; // can be required too
+} from "compose-regexp"; // can be required too
 
 // the example that made me write this, in order to ~parse JS.
 // It matches braces in source code, but skips comments and strings.
