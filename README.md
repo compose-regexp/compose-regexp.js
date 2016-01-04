@@ -40,13 +40,13 @@ let matcher = flags('gm',
             '*/'
         ),
         sequence('//', /[^\n]*\n/),
-        capture(either(/[{}]/, '{{', '}}'))
+        capture(either(/[{}]/, '}}'))
     )
 );
 
 // matcher:
 
-/(['"`])(?:\\\1|\\\\|(?!\1)[\s\S])*\1|\/\*(?:(?!\*\/)[\s\S])*\*\/|\/\/[^\n]*\n|([{}]|\{\{|\}\})/gm
+/(['"`])(?:\\\1|\\\\|(?!\1)[\s\S])*\1|\/\*(?:(?!\*\/)[\s\S])*\*\/|\/\/[^\n]*\n|([{}]|\}\})/gm
 
 // The most astute among you may have noticed that regexes in the subject string
 // would still trip that parser. Not perfect, but still useful.
