@@ -1,23 +1,24 @@
 {
   "name": "sane-regexp",
   "version": "0.1.3",
-  "description": "A saner way to build complex regular expressions",
-  "main": "sane-regexp.js",
-  "jsnext:main": "sane-regexp.es6.js",
+  "description": "A set of functions to build and compose complex regular expressions",
+  "main": "compose-regexp.js",
+  "jsnext:main": "compose-regexp.es6.js",
   "scripts": {
     "test": "node tests/tests.js",
     "build": "npm run rollup && npm run uglify && npm run gzip",
-    "rollup": "rollup sane-regexp.es6.js -o sane-regexp.js -f umd -n saneRegexp -u sane-regexp",
-    "uglify": "echo \"/**@license MIT-sane-regexp.js-©Pierre-Yves Gérardy*/$(uglifyjs sane-regexp.js )\" > dist/sane-regexp.min.js",
+    "rollup": "rollup compose-regexp.es6.js -o compose-regexp.js -f umd -n composeRegexp -u compose-regexp",
+    "uglify": "uglifyjs compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
     "uglifyv": "uglifyjs --version",
-    "gzip": "cat dist/sane-regexp.min.js | gzip -9 > dist/sane-regexp.min.js.gz"
+    "gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
+    "clean":"rm -f compose-regexp.js && rm -rf dist/*.*"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pygy/sane-regexp.js.git"
+    "url": "git+https://github.com/pygy/compose-regexp.js.git"
   },
   "keywords": [
-    "sane",
+    "compose",
     "regexp",
     "builder",
     "regular",
@@ -26,9 +27,9 @@
   "author": "Pierre-Yves Gérardy",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/pygy/sane-regexp.js/issues"
+    "url": "https://github.com/pygy/compose-regexp.js/issues"
   },
-  "homepage": "https://github.com/pygy/sane-regexp.js#readme",
+  "homepage": "https://github.com/pygy/compose-regexp.js#readme",
   "devDependencies": {
     "rollup": "^0.24.0",
     "uglify-js": "^2.6.1"

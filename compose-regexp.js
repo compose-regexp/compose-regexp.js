@@ -1,7 +1,7 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-    typeof define === 'function' && define.amd ? define('sane-regexp', ['exports'], factory) :
-    (factory((global.saneRegexp = {})));
+    typeof define === 'function' && define.amd ? define('compose-regexp', ['exports'], factory) :
+    (factory((global.composeRegexp = {})));
 }(this, function (exports) { 'use strict';
 
     var empty = new RegExp('')
