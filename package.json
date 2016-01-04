@@ -1,6 +1,6 @@
 {
   "name": "sane-regexp",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A saner way to build complex regular expressions",
   "main": "sane-regexp.js",
   "jsnext:main": "sane-regexp.es6.js",
