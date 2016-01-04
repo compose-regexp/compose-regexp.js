@@ -4,7 +4,6 @@
     (factory((global.saneRegexp = {})));
 }(this, function (exports) { 'use strict';
 
-    /**@license MIT-sane-regexp.js-©Pierre-Yves Gérardy*/
     var empty = new RegExp('')
 
     function normalize (source, degroup) {
