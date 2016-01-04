@@ -1,6 +1,6 @@
 {
   "name": "sane-regexp",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A set of functions to build and compose complex regular expressions",
   "main": "compose-regexp.js",
   "jsnext:main": "compose-regexp.es6.js",
