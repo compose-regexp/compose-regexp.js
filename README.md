@@ -145,6 +145,32 @@ Like `greedy()` but for non-greedy operators (`??`, `*?`, `+?`, `{n}?`, `{n,}?` 
 /\1/
 ```
 
+*Caveat emptor*, references are absolute. Therefore, refs may be broken if you compose two regexps that use captures.
+
+```JS
+
+stringMatcher = sequence(
+    capture(/['"`]/),
+    greedy('*', // a greedy zero-or-more repetition
+        either(
+            sequence('\\', ref(1)),
+            '\\\\',
+            sequence(avoid(ref(1)), /[\s\S]/)
+        )
+    ),
+    ref(1)
+)
+
+whooops = sequence(
+    capture('foo'),
+    stringMatcher
+)
+```
+
+In `whoops`, the `ref(1)` in stringMatcher actually refers to `foo`, not the opening quote.
+
+Fixing this would require an approach far more complex than what I'm doing now (concat the regexps source).
+
 ## License MIT
 
 The MIT License (MIT)
