@@ -1,6 +1,6 @@
 {
   "name": "sane-regexp",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A set of functions to build and compose complex regular expressions",
   "main": "compose-regexp.js",
   "jsnext:main": "compose-regexp.es6.js",
@@ -11,7 +11,7 @@
     "uglify": "uglifyjs compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
     "uglifyv": "uglifyjs --version",
     "gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
-    "clean":"rm -f compose-regexp.js && rm -rf dist/*.*"
+    "clean": "rm -f compose-regexp.js && rm -rf dist/*.*"
   },
   "repository": {
     "type": "git",
