@@ -22,7 +22,7 @@ let matcher = flags('gm',
     either(
         sequence(
             capture(/['"`]/),
-            greedy('*',
+            greedy('*', // a greedy zero-or-more repetition
                 either(
                     sequence('\\', ref(1)),
                     '\\\\',
@@ -46,7 +46,7 @@ let matcher = flags('gm',
 
 // matcher:
 
-/(['"`])(?:\\\1|\\\\|(?!\1)[\s\S])*\1|\/\*(?:(?!\*\/)[\s\S])*\*\/|\/\/[^\n]*\n|([{}]|\}\})/gm
+/(?:(['"`])(?:(?:\\\1|\\\\|(?!\1)[\s\S]))*\1|\/\*(?:(?!\*\/)[\s\S])*\*\/|\/\/[^\n]*\n|((?:[{}]|\}\})))/gm
 
 // The most astute among you may have noticed that regexes in the subject string
 // would still trip that parser. Not perfect, but still useful.
