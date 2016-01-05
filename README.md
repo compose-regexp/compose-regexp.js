@@ -2,8 +2,6 @@
 
 A set of functions to build and compose complex regular expressions in JavaScript. 
 
-Works nicely with [verbal expressions](https://github.com/VerbalExpressions/JSVerbalExpressions), even though the target user is likely different.
-
 The goal of this library is to enable advanced RegExp users to write maintainable lexers and parsers. A reasonable understanding of the parsing model of regexps is a prerequisite.
 
 ## Usage
