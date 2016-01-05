@@ -1,5 +1,5 @@
 {
-  "name": "sane-regexp",
+  "name": "compose-regexp",
   "version": "0.1.7",
   "description": "A set of functions to build and compose complex regular expressions",
   "main": "compose-regexp.js",
