@@ -16,7 +16,7 @@ import {
     ref, greedy
 } from "compose-regexp"; // can be required too
 
-// the example that made me write this, in order to ~parse JS.
+// the example that made me write this, in order to ~lex JS.
 // It matches braces in source code, but skips comments and strings.
 let matcher = flags('gm',
     either(
