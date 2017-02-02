@@ -1,8 +1,20 @@
+
+
 # compose-regexp.js
 
-A set of functions to build and compose complex regular expressions in JavaScript. 
+Build and compose *maintainable* regular expressions in JavaScript. 
 
-The goal of this library is to enable advanced RegExp users to write maintainable lexers and parsers. A reasonable understanding of the parsing model of regexps is a prerequisite.
+Regular expressions don't do justice to regular grammars.
+
+- The regular grammar/language formalism is all about [expression composition](https://en.wikipedia.org/w/index.php?title=Regular_language&oldid=748009543#Formal_definition).
+- Yet RegExps were designed as a [write-only syntax for command line tools](https://en.wikipedia.org/w/index.php?title=Regular_expression&oldid=762174774#History) like `ed` and `grep`.
+- Building large expressions from smaller, abstracted patterns is not possible using RegExp literals.
+
+This makes complex RegExps hard to read, debug and modify... 
+
+`compose-regexp` to the rescue!
+
+It doesn't make regular grammars more powerful, they are still [fundamentally limited](https://en.wikipedia.org/w/index.php?title=Chomsky_hierarchy&oldid=762040114#The_hierarchy), but since they are ubiquitous, we may as well have better tooling to implement them...
 
 ## Usage
 
