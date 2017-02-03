@@ -25,7 +25,7 @@ $ npm install --save compose-regexp
 ```JS
 import {
     sequence, either, capture,
-    ref, greedy
+    ref, greedy, flags, avoid
 } from "compose-regexp"; // can be required too
 
 // the example that made me write this, in order to ~lex JS.
