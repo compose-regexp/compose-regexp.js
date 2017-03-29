@@ -20,6 +20,11 @@ export function sequence() {
     return new RegExp([].map.call(arguments, normalize).join(''))
 }
 
+export function optional() {
+    if (!arguments.length) return empty;
+    return new RegExp('(?:' + [].map.call(arguments, normalize).join('') + ')?')
+}
+
 var validSuffix = sequence(
     /^/,
     either(
