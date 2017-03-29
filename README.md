@@ -107,7 +107,14 @@ The flags of intermediate regexps are ignored, and always reset to false unless 
 /(?:abc)/
 ```
 
-#### lookAhead(regexps...) 
+#### optional(regexps...)
+
+```JS
+> optional(/a/, /b/, /c/)
+/(?:abc)?/
+```
+
+#### lookAhead(regexps...)
 
 ```JS
 > lookAhead(/a/, /b/, /c/)

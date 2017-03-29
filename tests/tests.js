@@ -14,6 +14,7 @@ var lookAhead = sane.lookAhead
 var avoid = sane.avoid
 var flags = sane.flags
 var capture = sane.capture
+var optional = sane.optional
 
 eq(either('a'), /(?:a)/)
 eq(either('a','b'), /(?:a|b)/)
@@ -67,6 +68,8 @@ eq(greedy('+', /foo/), /(?:foo)+/)
 eq(frugal('?', /foo/), /(?:foo)??/)
 eq(frugal('*', /foo/), /(?:foo)*?/)
 eq(frugal('+', /foo/), /(?:foo)+?/)
+
+eq(optional('a', /foo/), /(?:afoo)?/)
 
 // this is a bit of a hack to take advantage of `eq` as assert equals.
 eq(sequence(flags('m', /o/).multiline), /true/)
