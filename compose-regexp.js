@@ -12,7 +12,7 @@
     }
 
     // TODO investigate -] in charSets for isSequential and forSequence
-    var tokenMatcher = /(\\[^])|[-()|\[\]]|\[\-/g
+    var tokenMatcher = /(\\[^])|\[\-|[-()|\[\]]/g
 
     function isSequential(source) {
         if (source.indexOf('|') === -1) return true
