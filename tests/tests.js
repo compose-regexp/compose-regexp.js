@@ -18,13 +18,13 @@ var avoid = CR.avoid
 var flags = CR.flags
 var capture = CR.capture
 
-req(either('a'), /(?:a)/)
-req(either('a','b'), /(?:a|b)/)
-req(either('a', 'b', 'c'), /(?:a|b|c)/)
+req(either('a'), /a/)
+req(either('a','b'), /a|b/)
+req(either('a', 'b', 'c'), /a|b|c/)
 
 // normalization
 ;[
-    either, group, sequence,
+    either, sequence,
     greedy('*'), frugal('+'),
     lookAhead, avoid,
     flags.bind(null, ''), capture
@@ -42,11 +42,8 @@ req(either('a', 'b', 'c'), /(?:a|b|c)/)
 req(sequence('a'), /a/)
 req(sequence('a', 'b'), /ab/)
 req(sequence('a', 'b', 'c'), /abc/)
+req(sequence('a', /b|c/), /a(?:b|c)/)
 req(sequence(/^/, 'b', /$/), /^b$/)
-
-req(group('a'), /(?:a)/)
-req(group('a', 'b'), /(?:ab)/)
-req(group('a', 'b', 'c'), /(?:abc)/)
 
 req(avoid('a'), /(?!a)/)
 req(avoid('a', 'b'), /(?!ab)/)
@@ -76,10 +73,12 @@ req(sequence(flags('m', /o/).multiline), /true/)
 req(sequence(flags('i', /o/).multiline), /false/)
 
 ;['*', '+', '?', '{2}', '{2,}', '{2,4}'].forEach(function(suffix){
-    req(greedy(suffix, 'a'), {source: '(?:a)' + suffix})
-    req(frugal(suffix, 'a'), {source: '(?:a)' + suffix + '?'})
-    req(greedy(suffix)('a'), {source: '(?:a)' + suffix})
-    req(frugal(suffix)('a'), {source: '(?:a)' + suffix + '?'})    
+    req(greedy(suffix, 'a'), {source: 'a' + suffix})
+    req(greedy(suffix, /a|b/), {source: '(?:a|b)' + suffix})
+    req(greedy(suffix, /(a)b/), {source: '(?:(a)b)' + suffix})
+    req(frugal(suffix, 'a'), {source: 'a' + suffix + '?'})
+    req(greedy(suffix)('a'), {source: 'a' + suffix})
+    req(frugal(suffix)('a'), {source: 'a' + suffix + '?'})    
 })
 
 ;['*', '+', '?', '{2}', '{2,}', '{2,4}'].forEach(function(suffix){

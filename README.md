@@ -100,13 +100,6 @@ The flags of intermediate regexps are ignored, and always reset to false unless 
 /abc/
 ```
 
-#### group(regexps...)
-
-```JS
-> group(/a/, /b/, /c/)
-/(?:abc)/
-```
-
 #### lookAhead(regexps...) 
 
 ```JS
@@ -182,10 +175,6 @@ whooops = sequence(
 In `whoops`, the `ref(1)` in stringMatcher actually refers to `foo`, not the opening quote.
 
 Fixing this would require an approach far more complex than what I'm doing now (concat the regexps source).
-
-## Notes
-
-This tool is very simple under the hood and its output is not optimised for either size or speed. For example, you may find that some non-capturing groups are superfluous. Getting rid of these would require parsing the regexps under the hood to simplify them, and it is beyond the scope of this project at this time.
 
 ## License MIT
 
