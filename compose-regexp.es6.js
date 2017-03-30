@@ -58,9 +58,14 @@ export function either() {
     return new RegExp([].map.call(arguments, normalize).join('|'))
 }
 
-export function sequence() {
-    if (!arguments.length) return empty;
-    return new RegExp([].map.call(arguments, forSequence).join(''))
+function _sequence() {
+    if (arguments.length === 0) return '';
+    if (arguments.length === 1) return normalize(arguments[0])
+    return [].map.call(arguments, forSequence).join('')
+}
+
+export function sequence () {
+    return new RegExp(_sequence.apply(null, arguments))
 }
 
 var validSuffix = sequence(
@@ -69,29 +74,22 @@ var validSuffix = sequence(
         '+', '*', '?',
         /\{\s*\d+(?:\s*,\s*)?\d*\s*\}/
     ),
-    /$/
+    /\??$/
 )
 
-var call = operator.call
+var call = _suffix.call
 var push = [].push
-function operator(suffix) {
+function _suffix(operator) {
     if (arguments.length === 1) return empty
-    var res = call.apply(sequence, arguments).source
-    return new RegExp(isAtomic(res) ? res + suffix : '(?:' + res + ')' + suffix)
+    var res = call.apply(_sequence, arguments)
+    return new RegExp(isAtomic(res) ? res + operator : '(?:' + res + ')' + operator)
 }
 
-export function greedy(suffix) {
+export function suffix(suffix) {
     if (!validSuffix.test(suffix)) throw new Error("Invalid suffix '" + suffix+ "'.")
     return (arguments.length === 1)
-        ? operator.bind(null, suffix)
-        : operator.apply(null, arguments)
-}
-
-export function frugal(suffix) {
-    if (!validSuffix.test(suffix)) throw new Error("Invalid suffix '" + suffix+ "'.")
-    return (arguments.length === 1)
-        ? operator.bind(null, suffix+'?')
-        : (arguments[0] = suffix + '?', operator.apply(null, arguments))
+        ? _suffix.bind(null, suffix)
+        : _suffix.apply(null, arguments)
 }
 
 export function ref(n) {
@@ -100,23 +98,19 @@ export function ref(n) {
 
 export function lookAhead() {
     if (!arguments.length) return empty;
-    return new RegExp('(?=' + [].map.call(arguments, forSequence).join('') + ')')
+    return new RegExp('(?=' + _sequence.apply(null, arguments) + ')')
 }
 
 export function avoid() {
     if (!arguments.length) return empty;
-    return new RegExp('(?!' + [].map.call(arguments, forSequence).join('') + ')')
+    return new RegExp('(?!' + _sequence.apply(null, arguments) + ')')
 }
 
 export function flags(opts) {
-    var args = [].slice.call(arguments, 1)
-    var expr
-    if (!args.length) expr = '';
-    else expr = args.map(forSequence).join('')
-    return new RegExp(expr, opts)
+    return new RegExp(call.apply(_sequence, arguments), opts)
 }
 
 export function capture () {
     if (!arguments.length) return new RegExp('()');
-    return new RegExp('(' + [].map.call(arguments, forSequence).join('') + ')')
+    return new RegExp('(' + _sequence.apply(null, arguments) + ')')
 }

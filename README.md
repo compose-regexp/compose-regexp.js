@@ -90,7 +90,7 @@ The flags of intermediate regexps are ignored, and always reset to false unless 
 
 ```JS
 > either(/a/, /b/, /c/)
-/(?:a|b|c)/
+/a|b|c/
 ```
 
 #### sequence(regexps...) 
@@ -98,6 +98,13 @@ The flags of intermediate regexps are ignored, and always reset to false unless 
 ```JS
 > sequence(/a/, /b/, /c/)
 /abc/
+```
+
+ComposeRegexp inserts non-capturing groups where needed:
+
+```JS
+> sequence(/a/, /b|c/)
+/a(?:b|c)/
 ```
 
 #### lookAhead(regexps...) 
@@ -116,24 +123,15 @@ Negative look ahead
 /(?!abc)/
 ```
 
-#### greedy(suffix, regexprs...), greedy(suffix)(regexprs...)
+#### suffix(operator, regexprs...), greedy(suffix)(regexprs...)
 
-Valid suffixes: (`?`, `*`, `+`, `{n}`, `{n,}` and `{m, n}`)
+Valid suffixes: (`?`, `*`, `+`, `{n}`, `{n,}` and `{m, n}`; `??`, `*?`, `+?`, `{n}?`, `{n,}?` and `{m, n}?`)
 
 ```JS
-> greedy("*", either(/a/, /b/, /c/))
+> suffix("*", either(/a/, /b/, /c/))
 /(?:a|b|c)*/
-> maybe = greedy('?'); maybe(either('a', 'b'))
-/(?:a|b)?/
-```
-
-#### frugal(suffix, regexprs...), frugal(suffix)(regexprs...)
-
-Like `greedy()` but for non-greedy operators (`??`, `*?`, `+?`, `{n}?`, `{n,}?` and `{m, n}?`).
-
-```JS
-> frugal("{1,3}", either(/a/, /b/, /c/))
-/(?:a|b|c){1,3}?/
+> maybe = suffix('?'); maybe('a')
+/a?/
 ```
 
 #### capture (regexprs...)
