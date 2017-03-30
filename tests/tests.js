@@ -66,9 +66,8 @@ req(suffix('?', /foo/), /(?:foo)?/)
 req(suffix('*', /foo/), /(?:foo)*/)
 req(suffix('+', /foo/), /(?:foo)+/)
 
-// this is a bit of a hack to take advantage of `eq` as assert equals.
-req(sequence(flags('m', /o/).multiline), /true/)
-req(sequence(flags('i', /o/).multiline), /false/)
+eq(flags('m', /o/).multiline, true)
+eq(flags('i', /o/).multiline, false)
 
 ;[
     '*', '+', '?', '{2}', '{2,}', '{2,4}',
