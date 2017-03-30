@@ -17,6 +17,7 @@
     }
 
     function group() {
+        console.log('group',arguments)
         if (!arguments.length) return empty;
         return new RegExp('(?:' + [].map.call(arguments, normalize).join('') + ')')
     }
@@ -35,18 +36,25 @@
         /$/
     )
 
+    var call = group.call
+    function operator(suffix) {
+        console.log('op', arguments)
+        if (arguments.length === 1) return empty
+        return new RegExp(new RegExp(call.apply(group, arguments).source + suffix))
+    }
+
     function greedy(suffix) {
         if (!validSuffix.test(suffix)) throw new Error("Invalid suffix '" + suffix+ "'.")
-        var args = [].slice.call(arguments, 1)
-        if (!args.length) return empty;
-        return new RegExp(group.apply(null, args).source + suffix)
+        return (arguments.length === 1)
+            ? operator.bind(null, suffix)
+            : operator.apply(null, arguments)
     }
 
     function frugal(suffix) {
         if (!validSuffix.test(suffix)) throw new Error("Invalid suffix '" + suffix+ "'.")
-        var args = [].slice.call(arguments, 1)
-        if (!args.length) return empty;
-        return new RegExp(group.apply(null, args).source + suffix + '?')
+        return (arguments.length === 1)
+            ? operator.bind(null, suffix+'?')
+            : (arguments[0] = suffix + '?', operator.apply(null, arguments))
     }
 
     function ref(n) {

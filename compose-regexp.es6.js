@@ -29,18 +29,25 @@ var validSuffix = sequence(
     /$/
 )
 
+var call = group.call
+var push = [].push
+function operator(suffix) {
+    if (arguments.length === 1) return empty
+    return new RegExp(new RegExp(call.apply(group, arguments).source + suffix))
+}
+
 export function greedy(suffix) {
     if (!validSuffix.test(suffix)) throw new Error("Invalid suffix '" + suffix+ "'.")
-    var args = [].slice.call(arguments, 1)
-    if (!args.length) return empty;
-    return new RegExp(group.apply(null, args).source + suffix)
+    return (arguments.length === 1)
+        ? operator.bind(null, suffix)
+        : operator.apply(null, arguments)
 }
 
 export function frugal(suffix) {
     if (!validSuffix.test(suffix)) throw new Error("Invalid suffix '" + suffix+ "'.")
-    var args = [].slice.call(arguments, 1)
-    if (!args.length) return empty;
-    return new RegExp(group.apply(null, args).source + suffix + '?')
+    return (arguments.length === 1)
+        ? operator.bind(null, suffix+'?')
+        : (arguments[0] = suffix + '?', operator.apply(null, arguments))
 }
 
 export function ref(n) {
