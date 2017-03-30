@@ -123,18 +123,18 @@ Negative look ahead
 /(?!abc)/
 ```
 
-#### greedy(suffix, regexprs...) 
+#### greedy(suffix, regexprs...), greedy(suffix)(regexprs...)
 
 Valid suffixes: (`?`, `*`, `+`, `{n}`, `{n,}` and `{m, n}`)
 
 ```JS
 > greedy("*", either(/a/, /b/, /c/))
 /(?:a|b|c)*/
-> maybe = greedy.bind(null, '?'); maybe(either('a', 'b'))
+> maybe = greedy('?'); maybe(either('a', 'b'))
 /(?:a|b)?/
 ```
 
-#### frugal(suffix, regexprs...) 
+#### frugal(suffix, regexprs...), frugal(suffix)(regexprs...)
 
 Like `greedy()` but for non-greedy operators (`??`, `*?`, `+?`, `{n}?`, `{n,}?` and `{m, n}?`).
 
