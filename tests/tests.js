@@ -44,6 +44,8 @@ req(sequence('a', /b|c/), /a(?:b|c)/)
 req(sequence(/^/, 'b', /$/), /^b$/)
 req(sequence(/a|b/), /a|b/)
 req(either(sequence(sequence(/a|b/))), /a|b/)
+req(sequence('thingy', either(/[a]/, /b/)), /thingy(?:[a]|b)/)
+
 
 
 
