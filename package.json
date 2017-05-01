@@ -32,6 +32,7 @@
   "homepage": "https://github.com/pygy/compose-regexp.js#readme",
   "devDependencies": {
     "rollup": "^0.24.0",
-    "uglify-js": "^2.6.1"
+    "uglify-js": "^2.6.1",
+    "ospec": "^1.2.3"
   }
 }

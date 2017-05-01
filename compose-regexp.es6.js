@@ -8,7 +8,7 @@ function normalize (source) {
 // TODO investigate -] in charSets for isSequential and forSequence
 var tokenMatcher = /(\\[^])|\[\-|[-()|\[\]]/g
 
-function isSequential(source) {
+export function isSequential(source) {
     if (source.indexOf('|') === -1) return true
     var depth = 0, inCharSet = false, match
     tokenMatcher.lastIndex = 0
@@ -17,13 +17,13 @@ function isSequential(source) {
         if (!inCharSet && match[0] === '(') depth++
         if (!inCharSet && match[0] === ')') depth--
         if (!inCharSet && (match[0] === '[' || match[0] === '[-')) inCharSet = true
-        if (inCharSet && match === ']') inCharSet = false
+        if (inCharSet && match[0] === ']') inCharSet = false
         if (depth === 0 && !inCharSet && match[0] === '|') return false
     }
     return true
 }
 
-function isOneGroup(source) {
+export function isOneGroup(source) {
     if (source.charAt(0) !== '(' || source.charAt(source.length - 1) !== ')') return false
     var depth = 0, inCharSet = false, match
     tokenMatcher.lastIndex = 0
