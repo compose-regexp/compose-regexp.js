@@ -1,3 +1,5 @@
+var o = require('ospec')
+
 var CR = require('../')
 
 function req(a, b) {
@@ -99,3 +101,15 @@ eq(flags('i', /o/).multiline, false)
     }
     eq(caught, true)
 })
+
+o.spec('parsers', function(){
+    o('isSequential', function(){
+        o(CR.isSequential('ab')).equals(true)
+        o(CR.isSequential('[a]b')).equals(true)
+        o(CR.isSequential('[a|b]')).equals(true)
+        o(CR.isSequential('a|b')).equals(false)
+        o(CR.isSequential('[a]|b')).equals(false)
+    })
+})
+
+o.run()

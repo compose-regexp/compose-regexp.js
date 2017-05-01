@@ -23,7 +23,7 @@
             if (!inCharSet && match[0] === '(') depth++
             if (!inCharSet && match[0] === ')') depth--
             if (!inCharSet && (match[0] === '[' || match[0] === '[-')) inCharSet = true
-            if (inCharSet && match === ']') inCharSet = false
+            if (inCharSet && match[0] === ']') inCharSet = false
             if (depth === 0 && !inCharSet && match[0] === '|') return false
         }
         return true
@@ -120,6 +120,8 @@
         return new RegExp('(' + _sequence.apply(null, arguments) + ')')
     }
 
+    exports.isSequential = isSequential;
+    exports.isOneGroup = isOneGroup;
     exports.either = either;
     exports.sequence = sequence;
     exports.suffix = suffix;
