@@ -25,7 +25,7 @@ $ npm install --save compose-regexp
 ```JS
 import {
     sequence, either, capture,
-    ref, greedy, flags, avoid
+    ref, suffix, flags, avoid
 } from "compose-regexp"; // can be required too
 
 // the example that made me write this, in order to ~lex JS.
@@ -34,7 +34,7 @@ let matcher = flags('gm',
     either(
         sequence(
             capture(/['"`]/),
-            greedy('*', // a greedy zero-or-more repetition
+            suffix('*', // a greedy zero-or-more repetition
                 either(
                     sequence('\\', ref(1)),
                     '\\\\',
@@ -45,7 +45,7 @@ let matcher = flags('gm',
         ),
         sequence(
             '/*',
-            greedy('*',
+            suffix('*',
                 avoid('*/'),
                 /[\s\S]/
             ),
