@@ -30,35 +30,62 @@ import {
 
 // the example that made me write this, in order to ~lex JS.
 // It matches braces in source code, but skips comments and strings.
-let matcher = flags('gm',
+
+const string = either(
+  sequence(
+    '"',
+    suffix('*?', // a non-greedy zero-or-more repetition
+      either(
+        /\\[\s\S]/,
+        /./
+      )
+    ),
+    '"'
+  ),
+  sequence(
+    "'",
+    suffix('*?',
+      either(
+        /\\[\s\S]/,
+        /./
+      )
+    ),
+    "'"
+  ),
+  sequence(
+    "`",
+    suffix('*?',
+      either(
+        /\\[\s\S]/,
+        /[\s\S]/
+      )
+    ),
+    "`"
+  )
+)
+
+const multiLineComment = sequence(
+  '/*',
+  suffix('*?',
+    /[\s\S]/
+  ),
+  '*/'
+)
+const singleLineComment = sequence('//', /[^\n]*\n/)
+
+const comment = either(multiLineComment, singleLineComment)
+
+const matcher = flags('gm',
     either(
-        sequence(
-            capture(/['"`]/),
-            suffix('*', // a greedy zero-or-more repetition
-                either(
-                    sequence('\\', ref(1)),
-                    '\\\\',
-                    sequence(avoid(ref(1)), /[\s\S]/)
-                )
-            ),
-            ref(1)
-        ),
-        sequence(
-            '/*',
-            suffix('*',
-                avoid('*/'),
-                /[\s\S]/
-            ),
-            '*/'
-        ),
-        sequence('//', /[^\n]*\n/),
+        comment,
+        string,
         capture(either(/[{}]/, '}}'))
     )
 );
 
 // matcher:
 
-/(?:(['"`])(?:(?:\\\1|\\\\|(?!\1)[\s\S]))*\1|\/\*(?:(?!\*\/)[\s\S])*\*\/|\/\/[^\n]*\n|((?:[{}]|\}\})))/gm
+/\/\*[\s\S]*?\*\/|\/\/[^\n]*\n|"(?:\\[\s\S]|.)*?"|'(?:\\[\s\S]|.)*?'|`(?:\\[\s\S]|[\s\S])*?`|([{}]|\}\})/gm
 
 // The most astute among you may have noticed that regexes in the subject string
 // would still trip that parser. Not perfect, but still useful.
