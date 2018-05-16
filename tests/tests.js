@@ -103,12 +103,13 @@ eq(flags('i', /o/).multiline, false)
 })
 
 o.spec('parsers', function(){
-    o('isSequential', function(){
-        o(CR.isSequential('ab')).equals(true)
-        o(CR.isSequential('[a]b')).equals(true)
-        o(CR.isSequential('[a|b]')).equals(true)
-        o(CR.isSequential('a|b')).equals(false)
-        o(CR.isSequential('[a]|b')).equals(false)
+    o('hasTopLevelChoice', function(){
+        o(CR.hasTopLevelChoice('ab')).equals(false)
+        o(CR.hasTopLevelChoice('[a]b')).equals(false)
+        o(CR.hasTopLevelChoice('[a|b]')).equals(false)
+        o(CR.hasTopLevelChoice('(a|b)')).equals(false)
+        o(CR.hasTopLevelChoice('a|b')).equals(true)
+        o(CR.hasTopLevelChoice('[a]|b')).equals(true)
     })
 })
 

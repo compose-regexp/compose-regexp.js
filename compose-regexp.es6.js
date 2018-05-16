@@ -8,8 +8,11 @@ function normalize (source) {
 // TODO investigate -] in charSets for isSequential and forSequence
 var tokenMatcher = /(\\[^])|\[\-|[-()|\[\]]/g
 
-export function isSequential(source) {
-    if (source.indexOf('|') === -1) return true
+// When composing expressions into a sequence, regexps that have a top-level
+// choice operator must be wrapped in a non-capturing group. This function
+// detects whether the group is needed or not.
+export function hasTopLevelChoice(source) {
+    if (source.indexOf('|') === -1) return false
     var depth = 0, inCharSet = false, match
     tokenMatcher.lastIndex = 0
     while(match = tokenMatcher.exec(source)) {
@@ -18,11 +21,12 @@ export function isSequential(source) {
         if (!inCharSet && match[0] === ')') depth--
         if (!inCharSet && (match[0] === '[' || match[0] === '[-')) inCharSet = true
         if (inCharSet && match[0] === ']') inCharSet = false
-        if (depth === 0 && !inCharSet && match[0] === '|') return false
+        if (depth === 0 && !inCharSet && match[0] === '|') return true
     }
-    return true
+    return false
 }
 
+// helper function for isAtomic
 export function isOneGroup(source) {
     if (source.charAt(0) !== '(' || source.charAt(source.length - 1) !== ')') return false
     var depth = 0, inCharSet = false, match
@@ -45,23 +49,29 @@ export function isOneGroup(source) {
 
 function forSequence(source) {
     source = normalize(source)
-    return isSequential(source) ? source : '(?:' + source + ')'
+    return hasTopLevelChoice(source) ? '(?:' + source + ')' : source
 }
 
+// Determine if a pattern can take a suffix operator or if a non-capturing group
+// is needed around it.
+// We can safely have false negatives (consequence: useless non-capturing groups)
+// whereas false positives would be bugs. We do ahve some false positives:
+// some charsets will be marked as non-atomic.
 function isAtomic(source) {
-    // we're sligtly too conservative here. Some charsets will be marked as non-atomic
     return source.length === 1 || /^\\[^]$|^\[(?:\\[^]|[^\]])*\]$/.test(source) || isOneGroup(source)
 }
 
+var map = [].map
+
 export function either() {
     if (!arguments.length) return empty;
-    return new RegExp([].map.call(arguments, normalize).join('|'))
+    return new RegExp(map.call(arguments, normalize).join('|'))
 }
 
 function _sequence() {
     if (arguments.length === 0) return '';
     if (arguments.length === 1) return normalize(arguments[0])
-    return [].map.call(arguments, forSequence).join('')
+    return map.call(arguments, forSequence).join('')
 }
 
 export function sequence () {
@@ -81,6 +91,8 @@ var call = _suffix.call
 var push = [].push
 function _suffix(operator) {
     if (arguments.length === 1) return empty
+    // an attrocious hack to pass all arguements but the operator to `_sequence()`
+    // without allocating an array. The operator is passed as `this` which is ignored.
     var res = call.apply(_sequence, arguments)
     return new RegExp(isAtomic(res) ? res + operator : '(?:' + res + ')' + operator)
 }
