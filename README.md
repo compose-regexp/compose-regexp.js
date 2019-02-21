@@ -150,9 +150,19 @@ Negative look ahead
 /(?!abc)/
 ```
 
-#### suffix(operator, regexprs...), greedy(suffix)(regexprs...)
+#### suffix(operator, regexprs...), suffix(operator)(regexprs...)
 
-Valid suffixes: (`?`, `*`, `+`, `{n}`, `{n,}` and `{m, n}`; `??`, `*?`, `+?`, `{n}?`, `{n,}?` and `{m, n}?`)
+Valid operators: 
+
+| greedy   | non-greedy |
+|----------|------------|
+| `?`      | `??`       |
+| `*`      | `*?`       |
+| `+`      | `+?`       |
+| `{n}`    | `{n}?`     |
+| `{n,}`   | `{n,}?`    |
+| `{m, n}` | `{m, n}?`  |
+
 
 ```JS
 > suffix("*", either(/a/, /b/, /c/))
