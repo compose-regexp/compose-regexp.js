@@ -1,5 +1,11 @@
 # Change Log
 
+
+
+## v0.5.3
+
+- fix broken package.json
+
 ## v0.5.2
 
 - added an auto-curried version of `flags()`.
