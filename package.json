@@ -1,17 +1,20 @@
 {
   "name": "compose-regexp",
-  "version": "0.4.2",
+  "version": "0.5.2",
   "description": "A set of functions to build and compose complex regular expressions",
+  "type": "",
   "main": "compose-regexp.js",
-  "jsnext:main": "compose-regexp.es6.js",
+  "module": "compose-regexp.mjs",
+  "jsnext:main": "compose-regexp.mjs",
+  "exports": {
+    ".": {}
+  },
   "scripts": {
-    "test": "node tests/tests.js",
+    "test": "gosub rollup && ospec",
     "build": "gosub rollup && gosub uglify && gosub gzip",
-    "rollup": "rollup compose-regexp.es6.js -o compose-regexp.js -f umd -n composeRegexp -u compose-regexp",
-    "uglify": "uglifyjs compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
-    "uglifyv": "uglifyjs --version",
-    "gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
-    "clean": "rm -f compose-regexp.js && rm -rf dist/*.*"
+    "rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp -u compose-regexp",
+    "uglify": "uglifyjs commpnjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
+    "gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz"
   },
   "repository": {
     "type": "git",
@@ -33,7 +36,7 @@
   "devDependencies": {
     "rollup": "^0.24.0",
     "uglify-js": "^2.6.1",
-    "ospec": "^1.2.3",
+    "ospec": "pygy/ospec#module-and-parallel",
     "gosub": "1.0.0"
   }
 }

@@ -106,11 +106,13 @@ Therefore:
 
 The flags of intermediate regexps are ignored, and always reset to false unless set by `flags()`.
 
-#### flags(opts, regexps...)
+#### flags(opts, regexps...), flags(opts)(regexps...)
 
 ```JavaScript
 > flags('gm', /a/)
 /a/gm
+> global = flags(g); global('a')
+/a/g
 ```
 
 #### either(regexps...) 
