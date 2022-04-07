@@ -21,6 +21,6 @@ export var map = [].map
 // Used only for type checking
 // the global RegExp is used everywhere else
 // This lets us set the global to a dummy function when testing
-// to ensure that the API is throwing SyntaxErrors, not the 
+// to ensure that the API is throwing SyntaxErrors, not the
 // RegExp constructor
 export var RegExpRef = RegExp

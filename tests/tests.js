@@ -3,6 +3,9 @@ import o from 'ospec'
 // This must happen before importing the lib
 import {nullProto, r} from '../test-utils/utils.js'
 
+console.log("/!\ lookbehind atomic()")
+console.log("/!\ tag expressions with atomic groups and the matching direction, error if used in the wrong context")
+
 import {
 	atomic, avoid, capture, either, flags,
 	lookAhead, lookBehind, namedCapture,
@@ -99,6 +102,10 @@ o('lookAhead', function(){
 
 })
 
+o.spec("Look Behind", function() {
+})
+
+
 o('capture', function(){
 	o(capture('a'))
 	.satisfies(r(/(a)/))
@@ -172,6 +179,8 @@ o.spec("flags", function () {
 
 	o("mixed flags ", function () {
 		o(()=>sequence(/./, /./i)).throws(Error)
+		o(()=>sequence(/./, /./g)).throws(Error)
+		o(()=>sequence(/./i, /./g)).throws(Error)
 
 	})
 
@@ -181,7 +190,7 @@ o.spec("flags", function () {
 				// Make sure we are the ones throwing
 				const R = RegExp
 				RegExp = function(...a){}
-				
+
 				o(()=>flags('u', /\a/)).throws(SyntaxError)
 				o(()=>flags('u', /\-/)).throws(SyntaxError)
 				o(()=>flags('u', /\u1/)).throws(SyntaxError)
@@ -594,6 +603,7 @@ o.spec("refs", function () {
 		o(()=>flags("u", ref("b"))).throws(SyntaxError)
 	})
 })
+
 
 o.spec("integration", function() {
 	o("string", function() {

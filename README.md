@@ -2,7 +2,7 @@
 
 # compose-regexp.js
 
-Build and compose *maintainable* regular expressions in JavaScript. 
+Build and compose *maintainable* regular expressions in JavaScript.
 
 Regular expressions don't do justice to regular grammars.
 
@@ -10,7 +10,7 @@ Regular expressions don't do justice to regular grammars.
 - Yet RegExps were designed as a [write-only syntax for command line tools](https://en.wikipedia.org/w/index.php?title=Regular_expression&oldid=762174774#History) like `ed` and `grep`.
 - Building large expressions from smaller, abstracted patterns is not possible using RegExp literals.
 
-This makes complex RegExps hard to read, debug and modify... 
+This makes complex RegExps hard to read, debug and modify...
 
 `compose-regexp` to the rescue!
 
@@ -110,9 +110,9 @@ whereas:
 > sequence(/./', /a/).source === '.a'
 ```
 
-- When composing RegExps with mixed flags: 
+- When composing RegExps with mixed flags:
 
-    - The `u` flag is contagious, and non-`u`. RegExps will be upgraded if possible. 
+    - The `u` flag is contagious, and non-`u`. RegExps will be upgraded if possible.
 
     - The other flags of regexps passed as parameters are ignored, and always reset to false on the result unless set by `flags()`. This is obviously suboptimal, and will be improved in time.
 - Back references (`\1`, etc...) are automatically upgraded suc that `sequence(/(\w)\1/, /(\d)\1/)` becomes `/(\w)\1(\d)\2/`. The `ref()` function lets one create refs programmatically:
@@ -141,14 +141,14 @@ const string = sequence(
 /a/g
 ```
 
-#### either(exprs...) 
+#### either(exprs...)
 
 ```JS
 > either(/a/, /b/, /c/)
 /a|b|c/
 ```
 
-#### sequence(exprs...) 
+#### sequence(exprs...)
 
 ```JS
 > sequence(/a/, /b/, /c/)
@@ -162,14 +162,14 @@ ComposeRegexp inserts non-capturing groups where needed:
 /a(?:b|c)/
 ```
 
-#### lookAhead(exprs...) 
+#### lookAhead(exprs...)
 
 ```JS
 > lookAhead(/a/, /b/, /c/)
 /(?=abc)/
 ```
 
-#### avoid(exprs...) 
+#### avoid(exprs...)
 
 Negative look ahead
 
@@ -178,9 +178,27 @@ Negative look ahead
 /(?!abc)/
 ```
 
+#### lookBehind(exprs...)
+
+Look behind
+
+```JS
+> lookBehind(/a/, /b/, /c/)
+/(?<=abc)/
+```
+
+#### notBehind(exprs...)
+
+Negative look behind
+
+```JS
+> notBehind(/a/, /b/, /c/)
+/(?<!abc)/
+```
+
 #### suffix(operator, exprrs...), suffix(operator)(exprrs...)
 
-Valid operators: 
+Valid operators:
 
 | greedy   | non-greedy |
 |----------|------------|
@@ -189,7 +207,7 @@ Valid operators:
 | `+`      | `+?`       |
 | `{n}`    | `{n}?`     |
 | `{n,}`   | `{n,}?`    |
-| `{m, n}` | `{m, n}?`  |
+| `{m,n}` | `{m,n}?`  |
 
 
 ```JS
@@ -206,37 +224,35 @@ Valid operators:
 /(abc)/
 ```
 
-#### ref(n: number|string) => Thunk<Regexp>
+#### ref(n: number|string) : Thunk<Regexp>
+
+See the [back references](#back-references) section below for a detailed description
 
 ```JS
-> ref(1)
-/\1/
+> ref(1)          // Object.assign(() => "\\1", {ref: true})
+() => "\\1"
+> ref("label")    // Object.assign(() => "\\k<label>", {ref: true})
+() => "\\k<label>"
 ```
 
+#### atomic(...expression) : RegExp
 
-```JS
+> atomic(/\w+?/)
 
-stringMatcher = sequence(
-    capture(/['"`]/),
-    greedy('*', // a greedy zero-or-more repetition
-        either(
-            sequence('\\', ref(1)),
-            '\\\\',
-            sequence(avoid(ref(1)), /[\s\S]/)
-        )
-    ),
-    ref(1)
-)
+### Atomic matching
 
-whooops = sequence(
-    capture('foo'),
-    stringMatcher
-)
-```
+Atomic groups prevent the RegExp engine from backtracking into them, aleviating the infamous ReDOS attack. JavaScript doesn't support them out of the box, but they can be emulated using the `/(?=(your stuff here))\1/` pattern. We provide a convenient `atomic()` helper that wraps regexps, making them atomic at the boundary. Putting an `atomic()` call around an expression is not enough to prevent backtracking, you'll have to put them around every expression that could backtrack pathologically.
 
-In `whoops`, the `ref(1)` in stringMatcher actually refers to `foo`, not the opening quote.
+Also, the `atomic()` helper creates a capturing group, offsetting the indices of nested and further captures. It is better to rely on named captures for extracting values.
 
-Fixing this would require an approach far more complex than what I'm doing now (concat the regexps source).
+In look behind assertions (`lookBehind(...)` and `notBehind(...)` a.k.a. `/(?<=...)/` and `/(?<!...)/`) matching happens backwards. For atomic matching in lookBehind assertions, wrap the construction of your pattern inside a `buildLookBehind(()=>...)` call, in that context, `atomic('x')` produces `/\1(?<=(x))/`.
+
+To better undestand the behavior of back-references in compound regexps, see the next section.
+
+### Back References
+
+Regular expressions let one reference the value of a previous group by either numbered or labeled back-references. Labeled back-references
+
 
 ## License MIT
 

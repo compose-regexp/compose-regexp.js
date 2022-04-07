@@ -75,7 +75,7 @@ export function initFlagValidator() {
 				var otherFlags = flags.replace('u', '').split('').sort().join('')
 				if (previousFlags != null) if (otherFlags !== previousFlags) {
 					throw new SyntaxError(
-						"Incompatible flags: '" 
+						"Incompatible flags: '"
 						+ (previousFlags + uAtIndex[uAtIndex.length-1] ? 'u' : '').split('').sort().join('')
 						+ "' and '"+flags+"'"
 					)
@@ -110,7 +110,7 @@ export function initFlagValidator() {
 					return fixLoneBrackets(x.source)
 				}
 			}
-			
+
 			return x.source
 		}
 	}
@@ -138,7 +138,7 @@ function fixBackRefForSequences() {
 				if (sigil === ']') inCClass = false
 				return match
 			})
-			count+=localCount    
+			count+=localCount
 			return result
 		}
 	}
@@ -218,8 +218,8 @@ var pEscapeMatcher = /^\\p\{[A-Z-a-z][A-Za-z=]*\}$/
 // some charsets will be marked as non-atomic.
 export function isAtomic(source, uFlag) {
 	return (
-		source.length === 1 
-		|| oneEscapeOrCharClassMatcher.test(source) 
+		source.length === 1
+		|| oneEscapeOrCharClassMatcher.test(source)
 		|| uFlag && pEscapeMatcher.test(source)
 		// No need to look for standalone \k escapes, the are illegal in u mode, an non-atomic otherwise.
 		|| isOneGroup(source)

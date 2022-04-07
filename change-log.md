@@ -17,10 +17,11 @@ This version revamps the core to provide better support for the `u` flag. The `r
 
 ### New features
 
+- `atomic(...exprs)` will create an atomic group that prevents backtracking into the expression once it has matched. ReDOS, begone!
 - The combinators also accept arrays of string, regexps, or arrays or the previous three.
 - `ref("label")` creates a named reference (`/\k<label>/`).
 - `namedCapture("label", ...)` returns (`/(?<label>...)/`)
-- support `lookBehind()` and `notBehind()` assertions
+- support `lookBehind()` and `notBehind()` assertions (and `buildLookBehind()` for if you want atomic groups in that contxt)
 
 ### Bug fixes
 

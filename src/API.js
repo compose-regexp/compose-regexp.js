@@ -51,7 +51,7 @@ var call = _suffix.call
 
 function _suffix(operator) {
 	if (arguments.length === 1) return empty
-	initFlagValidator() 
+	initFlagValidator()
 	// an attrocious hack to pass all arguements but the operator to `_sequence()`
 	// without allocating an array. The operator is passed as `this` which is ignored.
 	var res = call.apply(_sequence, arguments)
@@ -70,7 +70,7 @@ export var maybe = suffix('?')
 
 function checkRef(name) {
 	var type = typeof name
-	return type === 'string' && validateGroupName(name) 
+	return type === 'string' && validateGroupName(name)
 	|| type === 'number' && name > 0 && Math.round(name) === name
 }
 
@@ -108,6 +108,7 @@ export function namedCapture(name) {
 export function atomic() {
 	return sequence(lookAhead(capture.apply(null, arguments)), ref(1))
 }
+
 
 //- - - - - - - - - - - - - - - //
 //-- -  -   -    -     -      - //

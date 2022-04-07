@@ -37,7 +37,7 @@ o.after(function(){
 			set => (
 				set.size === 0
 				? {pass: true}
-				: {pass: false, message: 
+				: {pass: false, message:
 `console.${k}() was called from ${set.size} site${set.size === 1 ? '' : 's'}
 ${sort([...v.callSites]).map(s => "... " + s).join('\n')}
 `
@@ -77,9 +77,9 @@ export function r(ref){
         return errors === 0
         ? {pass: true, message: "" + candidate + " shouldn't have matched its reference"}
         : {pass: false, message: (
-            "RegExp mismatch:\n\t/" 
+            "RegExp mismatch:\n\t/"
             + ref.source + "/" + ref.flags
-            + "\nshould be\n\t/" 
+            + "\nshould be\n\t/"
             + candidate.source + "/" + candidate.flags
         )}
 	}
