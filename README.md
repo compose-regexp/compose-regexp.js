@@ -93,20 +93,46 @@ const matcher = flags('gm',
 
 ## API
 
-### General (important) notes:
+### General notes:
 
-The `regexp` parameters of these functions can be either RegExps or strings.
-Special characters in strings are escaped, so that `'.*'` is equivalent to `/\.\*/`.
+- The `exprs...` parameters of these functions can be either RegExps, strings, or arrays of `expr`s. Arrays of exprs are treated as nested sequences.
+
+- Special characters in strings are escaped, so that `'.*'` is equivalent to `/\.\*/`.
 Therefore:
 
 ```JS
-> sequence('.', '*').source
-'\\.\\*'
+> sequence('.', '*').source === '\\.\\*'
 ```
 
-The flags of intermediate regexps are ignored, and always reset to false unless set by `flags()`.
+whereas:
 
-#### flags(opts, regexps...), flags(opts)(regexps...)
+```JS
+> sequence(/./', /a/).source === '.a'
+```
+
+- When composing RegExps with mixed flags: 
+
+    - The `u` flag is contagious, and non-`u`. RegExps will be upgraded if possible. 
+
+    - The other flags of regexps passed as parameters are ignored, and always reset to false on the result unless set by `flags()`. This is obviously suboptimal, and will be improved in time.
+- Back references (`\1`, etc...) are automatically upgraded suc that `sequence(/(\w)\1/, /(\d)\1/)` becomes `/(\w)\1(\d)\2/`. The `ref()` function lets one create refs programmatically:
+
+```js
+const possessive = x => sequence(capture(lookFor(x)), ref(1))
+
+const string = sequence(
+  capture(either("'", '"')),
+  possessive(suffix("*", either(
+    ["\\", /./],
+    [avoid(ref(1)), /./]
+  ))),
+  ref(1)
+)
+)
+```
+
+
+#### flags(opts, exprs...), flags(opts)(exprs...)
 
 ```JavaScript
 > flags('gm', /a/)
@@ -115,14 +141,14 @@ The flags of intermediate regexps are ignored, and always reset to false unless 
 /a/g
 ```
 
-#### either(regexps...) 
+#### either(exprs...) 
 
 ```JS
 > either(/a/, /b/, /c/)
 /a|b|c/
 ```
 
-#### sequence(regexps...) 
+#### sequence(exprs...) 
 
 ```JS
 > sequence(/a/, /b/, /c/)
@@ -136,14 +162,14 @@ ComposeRegexp inserts non-capturing groups where needed:
 /a(?:b|c)/
 ```
 
-#### lookAhead(regexps...) 
+#### lookAhead(exprs...) 
 
 ```JS
 > lookAhead(/a/, /b/, /c/)
 /(?=abc)/
 ```
 
-#### avoid(regexps...) 
+#### avoid(exprs...) 
 
 Negative look ahead
 
@@ -152,7 +178,7 @@ Negative look ahead
 /(?!abc)/
 ```
 
-#### suffix(operator, regexprs...), suffix(operator)(regexprs...)
+#### suffix(operator, exprrs...), suffix(operator)(exprrs...)
 
 Valid operators: 
 
@@ -173,21 +199,20 @@ Valid operators:
 /a?/
 ```
 
-#### capture (regexprs...)
+#### capture (exprs...) : RegExp
 
 ```JS
 > capture(/a/, /b/, /c/)
 /(abc)/
 ```
 
-#### ref(n) 
+#### ref(n: number|string) => Thunk<Regexp>
 
 ```JS
 > ref(1)
 /\1/
 ```
 
-*Caveat emptor*, references are absolute. Therefore, refs may be broken if you compose two regexps that use captures.
 
 ```JS
 
