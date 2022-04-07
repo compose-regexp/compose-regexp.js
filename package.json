@@ -14,11 +14,11 @@
   },
   "scripts": {
     "test": "gosub rollup && ospec",
-    "build": "gosub rollup && gosub uglify && gosub gzip",
+    "build": "gosub rollup && gosub uglify && gosub gzip && gosub brotli",
     "rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
     "uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
     "gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
-    "old-rollup": "0.24.0"
+    "brotli": "brotli -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js"
   },
   "repository": {
     "type": "git",
