@@ -15,9 +15,10 @@
   "scripts": {
     "test": "gosub rollup && ospec",
     "build": "gosub rollup && gosub uglify && gosub gzip",
-    "rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp -u compose-regexp",
+    "rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
     "uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
-    "gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz"
+    "gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
+    "old-rollup": "0.24.0"
   },
   "repository": {
     "type": "git",
@@ -39,7 +40,7 @@
   "devDependencies": {
     "gosub": "1.0.0",
     "ospec": "^4.1.1",
-    "rollup": "^0.24.0",
+    "rollup": "^2.70.1",
     "uglify-js": "^2.6.1"
   }
 }

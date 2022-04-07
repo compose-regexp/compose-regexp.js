@@ -3,7 +3,7 @@
 //                                 //
 //    ,---                         //
 //    |~  . .  , ,--. ,--. ,--.    //
-//    |   |  )(  |--´ |    `--.    //
+//    |   |  }{  |--´ |    `--.    //
 //    '   ' ´  ` `--´ '    `--´    //
 //                                 //
 //  -     - -     - - -     - - - -//
@@ -52,7 +52,7 @@ function fixLoneBrackets (x) {
 		}
 		if (!inCClass) {
 			if(match === '}') return '\\}'
-			if(match === '.') return '(?:(?![\u{10000}-\u{10ffff}]).)'
+			if(match === '.') return '(?:(?![\\u{10000}-\\u{10ffff}]).)'
 			// '[^\\x0a\\x0d\\u2028/u2029\\u{10000}-\\u{10ffff}]' could also
 			// work and may be faster. It a tad longer though TODO: test it.
 		}
@@ -259,7 +259,7 @@ function normalize (x) {
 
 export function assemble(source, joiner, parentLength) {
 	var length = source.length
-	if (length === 0) return '';
+	if (length === 0) return ''
 	var result = map.call(source, function(item) {
 		if (isRef(item)) return item
 		// the predicate probably isn't right, it was whackamoled

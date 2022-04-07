@@ -20,7 +20,7 @@ import {Ref} from './ref.js'
 
 
 export function either() {
-	if (!arguments.length) return empty;
+	if (!arguments.length) return empty
 	initFlagValidator()
 	flagValidator.check.apply(null, arguments)
 	return new RegExp(assemble(arguments, '|', 1), flagValidator.getFlags())
@@ -33,7 +33,7 @@ function _sequence() {
 
 function sequenceFactory (before, after) {
 	return function () {
-		if (!arguments.length) return empty;
+		if (!arguments.length) return empty
 		initFlagValidator()
 		return new RegExp(before + _sequence.apply(null, arguments) + after, flagValidator.getFlags())
 	}
@@ -80,7 +80,7 @@ export function ref(n) {
 }
 
 export function capture () {
-	if (!arguments.length) return new RegExp('()');
+	if (!arguments.length) return new RegExp('()')
 	initFlagValidator()
 	return new RegExp(
 		'(' + fixBackRefForCaptures(_sequence.apply(null, arguments)) + ')',
@@ -91,7 +91,7 @@ export function capture () {
 function _namedCapture(name) {
 	if (typeof name !== 'string') throw new TypeError("String expected, got " + typeof name)
 	validateGroupName(name)
-	if (!arguments.length) return new RegExp('(<'+name+')');
+	if (!arguments.length) return new RegExp('(<'+name+')')
 	initFlagValidator()
 	return new RegExp(
 		'(?<' + name + '>' + fixBackRefForCaptures(call.apply(_sequence, arguments)) + ')',

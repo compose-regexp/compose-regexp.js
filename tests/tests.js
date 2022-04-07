@@ -132,7 +132,7 @@ o.spec("flags", function () {
 			i: 'ignoreCase',
 			m: 'multiline'
 		}
-		;[['s', 'dotAll'], ['u', 'unicode'], ['y', 'sticky']].forEach(function(pair){
+		void [['s', 'dotAll'], ['u', 'unicode'], ['y', 'sticky']].forEach(function(pair){
 			try {
 				new RegExp('', pair[0])
 				flagKinds[pair[0]] = pair[1]
@@ -292,17 +292,19 @@ o.spec("flags", function () {
 			o(sequence(/./u, /b/))
 			.satisfies(r(/.b/u))
 
+			const ref = /a(?:(?![\u{10000}-\u{10ffff}]).)/u
+
 			o(sequence(/a/u, /./))
-			.satisfies(r(/a(?:(?![𐀀-􏿿]).)/u))
+			.satisfies(r(ref))
 
 			o(sequence(/a/u, [/./]))
-			.satisfies(r(/a(?:(?![𐀀-􏿿]).)/u))
+			.satisfies(r(ref))
 
 			o(sequence([/a/u], /./))
-			.satisfies(r(/a(?:(?![𐀀-􏿿]).)/u))
+			.satisfies(r(ref))
 
 			o(sequence([/a/u], [/./]))
-			.satisfies(r(/a(?:(?![𐀀-􏿿]).)/u))
+			.satisfies(r(ref))
 
 		})
 
