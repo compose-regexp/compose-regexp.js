@@ -22,6 +22,14 @@ This version revamps the core to provide better support for the `u` flag. The `r
 - `namedCapture("label", ...)` returns (`/(?<label>...)/`)
 - support `lookBehind()` and `notBehind()` assertions
 
+### Bug fixes
+
+- fix the exports paths in `package.json`
+
+### Shout out
+
+... to [@Hypercubed](https://github.com/Hypercubed) who submitted a [PR](https://github.com/pygy/compose-regexp.js/pull/5) fo an issue that was solved independently.
+
 ## v0.5.3
 
 - fix broken package.json
