@@ -338,6 +338,8 @@ Regular exprssions let one reference the value of a previous group by either num
 
 - there is no way to exprss `/(a)(b\1c)/` programmatically. We'd need to add an optional second `nested` argument to `ref(n)`, and completely revamp the core for that to happen. Hypothetic API: `sequence(()=>[capture('a'), capture('b', ref(1, -1), 'c')])`.
 
+- `compose-regexp` currently doesn't deal with character set composition, this is on my TODO list.
+
 ## License MIT
 
 The MIT License (MIT)
