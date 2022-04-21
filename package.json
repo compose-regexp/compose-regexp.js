@@ -1,46 +1,46 @@
 {
-  "name": "compose-regexp",
-  "version": "0.6.0",
-  "description": "A set of functions to build and compose complex regular expressions",
-  "type": "module",
-  "main": "commonjs/compose-regexp.js",
-  "module": "compose-regexp.js",
-  "jsnext:main": "compose-regexp.mjs",
-  "exports": {
-    ".": {
-      "require": "./commonjs/compose-regexp.js",
-      "default": "./compose-regexp.js"
-    }
-  },
-  "scripts": {
-    "test": "gosub rollup && ospec",
-    "build": "gosub rollup && gosub uglify && gosub gzip && gosub brotli",
-    "rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
-    "uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
-    "gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
-    "brotli": "brotli -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/pygy/compose-regexp.js.git"
-  },
-  "keywords": [
-    "compose",
-    "regexp",
-    "builder",
-    "regular",
-    "expression"
-  ],
-  "author": "Pierre-Yves Gérardy",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/pygy/compose-regexp.js/issues"
-  },
-  "homepage": "https://github.com/pygy/compose-regexp.js#readme",
-  "devDependencies": {
-    "gosub": "1.0.0",
-    "ospec": "^4.1.1",
-    "rollup": "^2.70.1",
-    "uglify-js": "^2.6.1"
-  }
+	"name": "compose-regexp",
+	"version": "0.6.0",
+	"description": "A set of functions to build and compose complex regular expressions",
+	"type": "module",
+	"main": "commonjs/compose-regexp.js",
+	"module": "compose-regexp.js",
+	"jsnext:main": "compose-regexp.mjs",
+	"exports": {
+		".": {
+			"require": "./commonjs/compose-regexp.js",
+			"default": "./compose-regexp.js"
+		}
+	},
+	"scripts": {
+		"test": "ospec",
+		"build": "gosub rollup && gosub uglify && gosub gzip && gosub brotli",
+		"rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
+		"uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
+		"gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
+		"brotli": "brotli -f -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/pygy/compose-regexp.js.git"
+	},
+	"keywords": [
+		"compose",
+		"regexp",
+		"builder",
+		"regular",
+		"expression"
+	],
+	"author": "Pierre-Yves Gérardy",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/pygy/compose-regexp.js/issues"
+	},
+	"homepage": "https://github.com/pygy/compose-regexp.js#readme",
+	"devDependencies": {
+		"gosub": "1.0.0",
+		"ospec": "^4.1.1",
+		"rollup": "^2.70.1",
+		"uglify-js": "^2.6.1"
+	}
 }

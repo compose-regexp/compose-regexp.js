@@ -1,3 +1,9 @@
+import {slice, supportsU, unescape} from './utils.js'
+
+import {assemble, decorate, $direction, finalize, flagsMatcher, $flagValidator, groupNameMatcher, metadata, needsWrappingForQuantifier, $$_resetRefCapsAndFlags} from './core.js'
+
+import {Ref} from './ref.js'
+
 
 //- - - - - - - - - - -//
 // - - ~ - -   - -   - //
@@ -12,91 +18,108 @@
 
 // public API
 
-import {empty} from './utils.js'
-
-import {assemble, fixBackRefForCaptures, flagsMatcher, flagValidator, initFlagValidator, isAtomic, validateGroupName} from './core.js'
-
-import {Ref} from './ref.js'
-
+var empty = /(?:)/
 
 export function either() {
 	if (!arguments.length) return empty
-	initFlagValidator()
-	flagValidator.check.apply(null, arguments)
-	return new RegExp(assemble(arguments, '|', 1), flagValidator.getFlags())
+    $$_resetRefCapsAndFlags()
+    return finalize(assemble(arguments, true, false, 0))
 }
 
 function _sequence() {
-	flagValidator.check.apply(null, arguments)
-	return assemble(arguments, '', 1)
+	return assemble(arguments, false, false, 0)
 }
 
-function sequenceFactory (before, after) {
+export function sequence() {
+    if (!arguments.length) return empty
+    $$_resetRefCapsAndFlags()
+    return finalize(_sequence.apply(null, arguments))
+}
+
+function makeAssertion (before, after, direction) {
 	return function () {
 		if (!arguments.length) return empty
-		initFlagValidator()
-		return new RegExp(before + _sequence.apply(null, arguments) + after, flagValidator.getFlags())
+        var previousDir = $direction.current
+        $direction.current = direction
+        try {
+            $$_resetRefCapsAndFlags()
+            var result = _sequence.apply(null, arguments)
+            return finalize(decorate(result, {wrapper: [before, after]}), {direction: 0})
+        } finally {
+            $direction.current = previousDir
+        }
 	}
 }
 
-export var sequence = sequenceFactory("", "")
-export var lookAhead = sequenceFactory('(?=', ')')
-export var avoid = sequenceFactory('(?!', ')')
-export var lookBehind = sequenceFactory('(?<=', ')')
-export var notBehind = sequenceFactory('(?<!', ')')
+export var lookAhead = makeAssertion('(?=', ')', 1)
+export var avoid = makeAssertion('(?!', ')', 1)
+export var lookBehind = makeAssertion('(?<=', ')', -1)
+export var notBehind = makeAssertion('(?<!', ')', -1)
 
-var suffixMatcher = /^(?:\+|\*|\?|\{(?=(\d+))\1(?=(,?))\2(?=(\d*))\3\})\??$/
+var suffixMatcher = /^(?:\+|\*|\?|\{(\d+),?(\d*)\})\??$/
 
 var call = _suffix.call
 
-function _suffix(operator) {
-	if (arguments.length === 1) return empty
-	initFlagValidator()
-	// an attrocious hack to pass all arguements but the operator to `_sequence()`
+function _suffix() {
+	// the quantifier is passed as context
+	$$_resetRefCapsAndFlags()
+	// a neat hack to pass all arguements but the operator to `_sequence()`
 	// without allocating an array. The operator is passed as `this` which is ignored.
 	var res = call.apply(_sequence, arguments)
-	var u = flagValidator.getFlags()
-	return new RegExp(isAtomic(res, u.indexOf('u') !== -1) ? res + operator : '(?:' + res + ')' + operator, u)
+	return finalize(decorate(res, {condition: needsWrappingForQuantifier, wrapper: ['(?:', ')'], suffix: this}))
 }
 
-export function suffix(suffix) {
-	if (!suffixMatcher.test(suffix)) throw new SyntaxError("Invalid suffix '" + suffix+ "'.")
+export function suffix(quantifier) {
+	if (typeof quantifier !== 'string') quantifier = '{' + String(quantifier) + '}'
+	var match = quantifier.match(suffixMatcher)
+	if (!match || match[2] && Number(match[2]) < Number(match[1])) throw new SyntaxError("Invalid suffix '" + quantifier+ "'.")
 	return arguments.length === 1
-	? _suffix.bind(null, suffix)
-	: _suffix.apply(null, arguments)
+	? _suffix.bind(quantifier, quantifier)
+	: _suffix.apply(quantifier, arguments)
 }
 
 export var maybe = suffix('?')
 
+
+// Named groups are AFAIK not supported in engines that don't support the u flag.
+// Even if they were, the validator would be huge: Clipped to the BMP, 
+// - /\p{ID_Start}/u     is  /[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶ-ͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮ-ٯٱ-ۓەۥ-ۦۮ-ۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴ-ߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএ-ঐও-নপ-রলশ-হঽৎড়-ঢ়য়-ৡৰ-ৱৼਅ-ਊਏ-ਐਓ-ਨਪ-ਰਲ-ਲ਼ਵ-ਸ਼ਸ-ਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલ-ળવ-હઽૐૠ-ૡૹଅ-ଌଏ-ଐଓ-ନପ-ରଲ-ଳଵ-ହଽଡ଼-ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கங-சஜஞ-டண-தந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠ-ౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝ-ೞೠ-ೡೱ-ೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะา-ำเ-ๆກ-ຂຄຆ-ຊຌ-ຣລວ-ະາ-ຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥ-ၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛮ-ᛸᜀ-ᜑᜟ-ᜱᝀ-ᝑᝠ-ᝬᝮ-ᝰក-ឳៗៜᠠ-ᡸᢀ-ᢨᢪᢰ-ᣵᤀ-ᤞᥐ-ᥭᥰ-ᥴᦀ-ᦫᦰ-ᧉᨀ-ᨖᨠ-ᩔᪧᬅ-ᬳᭅ-ᭌᮃ-ᮠᮮ-ᮯᮺ-ᯥᰀ-ᰣᱍ-ᱏᱚ-ᱽᲀ-ᲈᲐ-ᲺᲽ-Ჿᳩ-ᳬᳮ-ᳳᳵ-ᳶᳺᴀ-ᶿḀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥῲ-ῴῶ-ῼⁱⁿₐ-ₜℂℇℊ-ℓℕ℘-ℝℤΩℨK-ℹℼ-ℿⅅ-ⅉⅎⅠ-ↈⰀ-ⳤⳫ-ⳮⳲ-ⳳⴀ-ⴥⴧⴭⴰ-ⵧⵯⶀ-ⶖⶠ-ⶦⶨ-ⶮⶰ-ⶶⶸ-ⶾⷀ-ⷆⷈ-ⷎⷐ-ⷖⷘ-ⷞ々-〇〡-〩〱-〵〸-〼ぁ-ゖ゛-ゟァ-ヺー-ヿㄅ-ㄯㄱ-ㆎㆠ-ㆿㇰ-ㇿ㐀-䶿一-ꒌꓐ-ꓽꔀ-ꘌꘐ-ꘟꘪ-ꘫꙀ-ꙮꙿ-ꚝꚠ-ꛯꜗ-ꜟꜢ-ꞈꞋ-ꟊꟐ-ꟑꟓꟕ-ꟙꟲ-ꠁꠃ-ꠅꠇ-ꠊꠌ-ꠢꡀ-ꡳꢂ-ꢳꣲ-ꣷꣻꣽ-ꣾꤊ-ꤥꤰ-ꥆꥠ-ꥼꦄ-ꦲꧏꧠ-ꧤꧦ-ꧯꧺ-ꧾꨀ-ꨨꩀ-ꩂꩄ-ꩋꩠ-ꩶꩺꩾ-ꪯꪱꪵ-ꪶꪹ-ꪽꫀꫂꫛ-ꫝꫠ-ꫪꫲ-ꫴꬁ-ꬆꬉ-ꬎꬑ-ꬖꬠ-ꬦꬨ-ꬮꬰ-ꭚꭜ-ꭩꭰ-ꯢ가-힣ힰ-ퟆퟋ-ퟻ豈-舘並-龎ﬀ-ﬆﬓ-ﬗיִײַ-ﬨשׁ-זּטּ-לּמּנּ-סּףּ-פּצּ-ﮱﯓ-ﴽﵐ-ﶏﶒ-ﷇﷰ-ﷻﹰ-ﹴﹶ-ﻼＡ-Ｚａ-ｚｦ-ﾾￂ-ￇￊ-ￏￒ-ￗￚ-ￜ]/
+// - /\p{ID_Continue}/u  is  /[0-9A-Z_a-zªµ·ºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮ̀-ʹͶ-ͷͺ-ͽͿΆ-ΊΌΎ-ΡΣ-ϵϷ-ҁ҃-҇Ҋ-ԯԱ-Ֆՙՠ-ֈ֑-ֽֿׁ-ׂׄ-ׇׅא-תׯ-ײؐ-ؚؠ-٩ٮ-ۓە-ۜ۟-۪ۨ-ۼۿܐ-݊ݍ-ޱ߀-ߵߺ߽ࠀ-࠭ࡀ-࡛ࡠ-ࡪࡰ-ࢇࢉ-ࢎ࢘-ࣣ࣡-ॣ०-९ॱ-ঃঅ-ঌএ-ঐও-নপ-রলশ-হ়-ৄে-ৈো-ৎৗড়-ঢ়য়-ৣ০-ৱৼ৾ਁ-ਃਅ-ਊਏ-ਐਓ-ਨਪ-ਰਲ-ਲ਼ਵ-ਸ਼ਸ-ਹ਼ਾ-ੂੇ-ੈੋ-੍ੑਖ਼-ੜਫ਼੦-ੵઁ-ઃઅ-ઍએ-ઑઓ-નપ-રલ-ળવ-હ઼-ૅે-ૉો-્ૐૠ-ૣ૦-૯ૹ-૿ଁ-ଃଅ-ଌଏ-ଐଓ-ନପ-ରଲ-ଳଵ-ହ଼-ୄେ-ୈୋ-୍୕-ୗଡ଼-ଢ଼ୟ-ୣ୦-୯ୱஂ-ஃஅ-ஊஎ-ஐஒ-கங-சஜஞ-டண-தந-பம-ஹா-ூெ-ைொ-்ௐௗ௦-௯ఀ-ఌఎ-ఐఒ-నప-హ఼-ౄె-ైొ-్ౕ-ౖౘ-ౚౝౠ-ౣ౦-౯ಀ-ಃಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹ಼-ೄೆ-ೈೊ-್ೕ-ೖೝ-ೞೠ-ೣ೦-೯ೱ-ೲഀ-ഌഎ-ഐഒ-ൄെ-ൈൊ-ൎൔ-ൗൟ-ൣ൦-൯ൺ-ൿඁ-ඃඅ-ඖක-නඳ-රලව-ෆ්ා-ුූෘ-ෟ෦-෯ෲ-ෳก-ฺเ-๎๐-๙ກ-ຂຄຆ-ຊຌ-ຣລວ-ຽເ-ໄໆ່-ໍ໐-໙ໜ-ໟༀ༘-༙༠-༩༹༵༷༾-ཇཉ-ཬཱ-྄྆-ྗྙ-ྼ࿆က-၉ၐ-ႝႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚ፝-፟፩-፱ᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛮ-ᛸᜀ-᜕ᜟ-᜴ᝀ-ᝓᝠ-ᝬᝮ-ᝰᝲ-ᝳក-៓ៗៜ-៝០-៩᠋-᠍᠏-᠙ᠠ-ᡸᢀ-ᢪᢰ-ᣵᤀ-ᤞᤠ-ᤫᤰ-᤻᥆-ᥭᥰ-ᥴᦀ-ᦫᦰ-ᧉ᧐-᧚ᨀ-ᨛᨠ-ᩞ᩠-᩿᩼-᪉᪐-᪙ᪧ᪰-᪽ᪿ-ᫎᬀ-ᭌ᭐-᭙᭫-᭳ᮀ-᯳ᰀ-᰷᱀-᱉ᱍ-ᱽᲀ-ᲈᲐ-ᲺᲽ-Ჿ᳐-᳔᳒-ᳺᴀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥῲ-ῴῶ-ῼ‿-⁀⁔ⁱⁿₐ-ₜ⃐-⃥⃜⃡-⃰ℂℇℊ-ℓℕ℘-ℝℤΩℨK-ℹℼ-ℿⅅ-ⅉⅎⅠ-ↈⰀ-ⳤⳫ-ⳳⴀ-ⴥⴧⴭⴰ-ⵧⵯ⵿-ⶖⶠ-ⶦⶨ-ⶮⶰ-ⶶⶸ-ⶾⷀ-ⷆⷈ-ⷎⷐ-ⷖⷘ-ⷞⷠ-ⷿ々-〇〡-〯〱-〵〸-〼ぁ-ゖ゙-ゟァ-ヺー-ヿㄅ-ㄯㄱ-ㆎㆠ-ㆿㇰ-ㇿ㐀-䶿一-ꒌꓐ-ꓽꔀ-ꘌꘐ-ꘫꙀ-꙯ꙴ-꙽ꙿ-꛱ꜗ-ꜟꜢ-ꞈꞋ-ꟊꟐ-ꟑꟓꟕ-ꟙꟲ-ꠧ꠬ꡀ-ꡳꢀ-ꣅ꣐-꣙꣠-ꣷꣻꣽ-꤭ꤰ-꥓ꥠ-ꥼꦀ-꧀ꧏ-꧙ꧠ-ꧾꨀ-ꨶꩀ-ꩍ꩐-꩙ꩠ-ꩶꩺ-ꫂꫛ-ꫝꫠ-ꫯꫲ-꫶ꬁ-ꬆꬉ-ꬎꬑ-ꬖꬠ-ꬦꬨ-ꬮꬰ-ꭚꭜ-ꭩꭰ-ꯪ꯬-꯭꯰-꯹가-힣ힰ-ퟆퟋ-ퟻ豈-舘並-龎ﬀ-ﬆﬓ-ﬗיִ-ﬨשׁ-זּטּ-לּמּנּ-סּףּ-פּצּ-ﮱﯓ-ﴽﵐ-ﶏﶒ-ﷇﷰ-ﷻ︀-️︠-︯︳-︴﹍-﹏ﹰ-ﹴﹶ-ﻼ０-９Ａ-Ｚ＿ａ-ｚｦ-ﾾￂ-ￇￊ-ￏￒ-ￗￚ-ￜ]/
+// i.e. 2 extra KiB
+
+export function validateGroupName(name) {
+	return !supportsU || groupNameMatcher.test(unescape(name))
+}
+
 function checkRef(name) {
 	var type = typeof name
 	return type === 'string' && validateGroupName(name)
-	|| type === 'number' && name > 0 && Math.round(name) === name
+	|| type === 'number' && 0 < name && Math.round(name) === name
 }
 
 export function ref(n) {
-	if (!checkRef(n)) throw new TypeError("Bad ref")
-	return Ref(n)
+	if (!checkRef(n)) throw new SyntaxError("Bad ref: " + n)
+    return typeof n === 'string' 
+	? new RegExp('\\k<' + n + '>')
+	:metadata.set(Ref(n), {
+        direction: $direction.current,
+        hasFinalRef: true,
+        hasRefs: true,
+    })
 }
 
-export function capture () {
-	if (!arguments.length) return new RegExp('()')
-	initFlagValidator()
-	return new RegExp(
-		'(' + fixBackRefForCaptures(_sequence.apply(null, arguments)) + ')',
-		flagValidator.getFlags()
-	)
+export function capture() {
+	$$_resetRefCapsAndFlags()
+    var res = assemble(arguments, false, false, 1)
+	return finalize(decorate(res, {wrapper: ['(', ')']}))
 }
 
 function _namedCapture(name) {
 	if (typeof name !== 'string') throw new TypeError("String expected, got " + typeof name)
 	validateGroupName(name)
-	if (!arguments.length) return new RegExp('(<'+name+')')
-	initFlagValidator()
-	return new RegExp(
-		'(?<' + name + '>' + fixBackRefForCaptures(call.apply(_sequence, arguments)) + ')',
-		flagValidator.getFlags()
-	)
+	$$_resetRefCapsAndFlags()
+    var res = assemble(slice.call(arguments, 1), false, false, 1)
+    return finalize(decorate(res, {wrapper: ['(?<' + name + '>', ')']}))
 }
 
 export function namedCapture(name) {
@@ -106,7 +129,11 @@ export function namedCapture(name) {
 }
 
 export function atomic() {
-	return sequence(lookAhead(capture.apply(null, arguments)), ref(1))
+    return $direction.current === 1 
+    // forward: 
+    ? sequence(lookAhead(capture.apply(null, arguments)), ref(1))
+    // backward:
+    : sequence(ref(1), lookBehind(capture.apply(null, arguments)))
 }
 
 
@@ -122,79 +149,29 @@ export function atomic() {
 
 // flag operations
 
-function add(a, b) {
+// core functions
+
+function flagAdd(a, b) {
 	a = a.split('')
-	b = b.split('')
-	b.forEach(function(flag){if (a.indexOf(flag) === -1) a.push(flag)})
+	b.split('').forEach(function(flag){if (a.indexOf(flag) === -1) a.push(flag)})
 	return a.sort().join('')
 }
 
-function remove(a, b) {
-	a = a.split('')
-	b = b.split('')
-	return a.filter(function(flag){return b.indexOf(flag) === -1}).sort().join('')
-}
-
 function _flags(fl) {
-	initFlagValidator()
-	// force bad escape detection for promotion
-	if (fl.indexOf('u') !== -1) flagValidator.setU()
-	// bad hack, see _suffix
-	var source = call.apply(_sequence, arguments)
-	return new RegExp(source, add(fl, flagValidator.getFlags()))
-}
-
-export function flags(flags) {
-	if (typeof flags !== 'string') throw TypeError("String expected as first argument, got " + typeof flags)
-	if (!flagsMatcher.test(flags)) throw new SyntaxError("Invalid flags: " + flags)
-	return arguments.length === 1
-	? _flags.bind(null, flags)
-	: _flags.apply(null, arguments)
-}
-
-function _flagsOp(fl, re) {
 	// the operation is passed as context
-	if (arguments.length > 2) throw new RangeError("flags." + this.name + "() expects at most two arguments")
-	initFlagValidator()
-	var original = (re && re.flags) || ''
-	if (fl.indexOf('u') !== -1) flagValidator.setU()
+	$$_resetRefCapsAndFlags()
+    // flags.remove throws if passed 'u' so if present here, it is to be added and the engine should know
+    // beforehand
+	if (fl.indexOf('u') !== -1) $flagValidator.U = true
 	// bad hack, see _suffix
 	var source = call.apply(_sequence, arguments)
-	return new RegExp(source, add(this(original, fl), flagValidator.getFlags()))
+	return finalize(source, {flagsOp: this, flags: fl})
 }
 
-flags.add = function(flags) {
+export var flags = {add: function add(flags) {
 	if (typeof flags !== 'string') throw TypeError("String expected as first argument, got " + typeof flags)
 	if (!flagsMatcher.test(flags)) throw new SyntaxError("Invalid flags: " + flags)
 	return arguments.length === 1
-	? _flagsOp.bind(add, flags)
-	: _flagsOp.apply(add, arguments)
-}
-
-flags.remove = function(flags) {
-	if (typeof flags !== 'string') throw TypeError("String expected as first argument, got " + typeof flags)
-	// No validiy checks here, we're not adding anything.
-	return arguments.length === 1
-	? _flagsOp.bind(remove, flags)
-	: _flagsOp.apply(remove, arguments)
-}
-
-// TODO Set operations
-
-// var rangeCache = {}
-
-// var hex = /[0-9A-Fa-f]/
-
-// const elementsU = either(
-//     ['\\p{', capture(), '}'],
-//     /\\p\{\w+\}/,
-//     /\\u[0-9A-Fa-f]{4}/,
-//     /\\u\{[0-9A-Fa-f]{1,6}\}/,
-//     /\\x[0-9A-Fa-f]{2}/,
-//     /\\./,
-//     /./
-// )
-
-// const range = sequence(element, '-', element)
-
-// var charSetValidator = flags("g")
+	? _flags.bind(flagAdd, flags)
+	: _flags.apply(flagAdd, arguments)
+}}

@@ -3,28 +3,34 @@ import o from 'ospec'
 // This must happen before importing the lib
 import {nullProto, r} from '../test-utils/utils.js'
 
-console.log("/!\ lookbehind atomic()")
-console.log("/!\ tag expressions with atomic groups and the matching direction, error if used in the wrong context")
-
 import {
 	atomic, avoid, capture, either, flags,
 	lookAhead, lookBehind, namedCapture,
 	notBehind, ref, sequence, suffix
 } from '../compose-regexp.js'
 
-import {hasTopLevelChoice} from '../src/core.js'
+import {isDisjunction} from '../src/core.js'
+
+// import {store} from '../src/utils.js'
+
+// TODO([
+// 	"test metadata ?"
+// ])
 
 o.spec("general", function () {
+	// throw new Error("GAZAR");
 	o('string and a lack of arguments are normalized', function(){
-		[
-		either, sequence,
-		suffix('*'),
-		lookAhead, avoid,
-		flags(''), capture
+		void [
+			either, sequence,
+			lookAhead, avoid,
+			flags.add(''), capture
 		].forEach(function(f) {
 			// normalization
 			o(f(/\./))
 			.satisfies(r(f('.')))
+
+			o(f(/-/))
+			.satisfies(r(f('-')))
 
 			// empty arg list
 			if (f !== capture)
@@ -49,9 +55,24 @@ o('either', function() {
 	o(either('a', 'b', 'c'))
 	.satisfies(r(/a|b|c/))
 
+	o(either('a', either('b', 'c')))
+	.satisfies(r(/a|b|c/))
+
+	o(either('a', either(/b|c/)))
+	.satisfies(r(/a|b|c/))
+
+	o(either(either(either('a', 'b'))))
+	.satisfies(r(/a|b/))
+
+	o(either(either(either(/a|b/))))
+	.satisfies(r(/a|b/))
+
 })
 
 o('sequence', function() {
+	o(sequence(''))
+	.satisfies(r(/(?:)/))
+
 	o(sequence('a'))
 	.satisfies(r(/a/))
 
@@ -75,6 +96,9 @@ o('sequence', function() {
 
 	o(sequence('thingy', either(/[a]/, /b/)))
 	.satisfies(r(/thingy(?:[a]|b)/))
+
+	o(sequence(/a/i, /b/i))
+	.satisfies(r(/ab/i))
 
 })
 
@@ -146,15 +170,15 @@ o.spec("flags", function () {
 			} catch(e) {}
 		})
 		for (var k in flagKinds) {
-			o(flags(k, /o/)[flagKinds[k]]).equals(true)
-			o(flags(k)(/o/)[flagKinds[k]]).equals(true)
+			o(flags.add(k, /o/)[flagKinds[k]]).equals(true)
+			o(flags.add(k)(/o/)[flagKinds[k]]).equals(true)
 			for (var kk in flagKinds) if (k !== kk) {
-				o(flags(kk, /o/)[flagKinds[k]]).equals(false)
-				o(flags(kk)(/o/)[flagKinds[k]]).equals(false)
+				o(flags.add(kk, /o/)[flagKinds[k]]).equals(false)
+				o(flags.add(kk)(/o/)[flagKinds[k]]).equals(false)
 			}
 		}
-		o(flags('m', /o/).multiline).equals(true)
-		o(flags('i', /o/).multiline).equals(false)
+		o(flags.add('m', /o/).multiline).equals(true)
+		o(flags.add('i', /o/).multiline).equals(false)
 
 	})
 
@@ -171,17 +195,126 @@ o.spec("flags", function () {
 			}
 		})
 
-		o(()=>flags(illegal)).throws(SyntaxError)
 		o(()=>flags.add(illegal)).throws(SyntaxError)
-		o(()=>flags.remove(illegal)).notThrows(SyntaxError)
 
 	})
 
 	o("mixed flags ", function () {
 		o(()=>sequence(/./, /./i)).throws(Error)
-		o(()=>sequence(/./, /./g)).throws(Error)
 		o(()=>sequence(/./i, /./g)).throws(Error)
 
+		o(sequence(/a/, /a/u))
+		.satisfies(r(/aa/u))
+
+		o(sequence(/a/u, /a/))
+		.satisfies(r(/aa/u))
+
+		o(sequence(/a/, /a/u, /a/s))
+		.satisfies(r(/aaa/u))
+
+		o(sequence(/a/, /a/u, /a/s))
+		.satisfies(r(/aaa/u))
+
+		o(sequence(/a/u, /a/s, /a/))
+		.satisfies(r(/aaa/u))
+
+		o(sequence(/a/s, /a/, /a/u))
+		.satisfies(r(/aaa/u))
+
+	})
+
+	o("s flag is absorbed, dot converted", function() {
+		o(sequence(/./s))
+		.satisfies(r(/[^]/))
+
+		o(sequence(/./su))
+		.satisfies(r(/[^]/u))
+
+		o(sequence('a', /./s))
+		.satisfies(r(/a[^]/))
+
+		o(sequence('a', /./su))
+		.satisfies(r(/a[^]/u))
+
+		o(sequence(/a/, /./s))
+		.satisfies(r(/a[^]/))
+
+		o(sequence(/a/, /./su))
+		.satisfies(r(/a[^]/u))
+
+		o(sequence(/(.)/s, ref(1)))
+		.satisfies(r(/([^])\1/))
+
+		o(sequence(/(.)/su, ref(1)))
+		.satisfies(r(/([^])\1/u))
+
+
+		o(sequence(/\./s))
+		.satisfies(r(/\./))
+
+		o(sequence(/\./su))
+		.satisfies(r(/\./u))
+
+		o(sequence('a', /\./s))
+		.satisfies(r(/a\./))
+
+		o(sequence('a', /\./su))
+		.satisfies(r(/a\./u))
+
+		o(sequence(/a/, /\./s))
+		.satisfies(r(/a\./))
+
+		o(sequence(/a/, /\./su))
+		.satisfies(r(/a\./u))
+
+		o(sequence(/(\.)/s, ref(1)))
+		.satisfies(r(/(\.)\1/))
+
+		o(sequence(/(\.)/su, ref(1)))
+		.satisfies(r(/(\.)\1/u))
+		
+
+		o(sequence(/[.]/s))
+		.satisfies(r(/[.]/))
+
+		o(sequence(/[.]/su))
+		.satisfies(r(/[.]/u))
+
+		o(sequence('a', /[.]/s))
+		.satisfies(r(/a[.]/))
+
+		o(sequence('a', /[.]/su))
+		.satisfies(r(/a[.]/u))
+
+		o(sequence(/a/, /[.]/s))
+		.satisfies(r(/a[.]/))
+
+		o(sequence(/a/, /[.]/su))
+		.satisfies(r(/a[.]/u))
+
+		o(sequence(/([.])/s, ref(1)))
+		.satisfies(r(/([.])\1/))
+
+		o(sequence(/([.])/su, ref(1)))
+		.satisfies(r(/([.])\1/u))
+
+	})
+
+	o("the m flag is absorbed, ^ and $ converted, but only once", function() {
+		o(sequence(/^/m))
+		.satisfies(r((/(?:^|(?<=[\n\r\u2028\u2029]))/)))
+		
+		o(sequence(/$/m))
+		.satisfies(r((/(?:$|(?=[\n\r\u2028\u2029]))/)))
+
+		o(sequence(/[^$]/m))
+		.satisfies(r(/[^$]/))
+
+		o(sequence(flags.add('m', sequence(/^/m))))
+		.satisfies(r((/(?:^|(?<=[\n\r\u2028\u2029]))/)))
+		
+		o(sequence(flags.add('m', sequence(/$/m))))
+		.satisfies(r((/(?:$|(?=[\n\r\u2028\u2029]))/)))
 	})
 
 	o.spec("u flag", function() {
@@ -189,15 +322,19 @@ o.spec("flags", function () {
 			o("flag('u',...) rejects invalid non-u sources", function() {
 				// Make sure we are the ones throwing
 				const R = RegExp
-				RegExp = function(...a){}
+				RegExp = function(){}
+				try {
+					o(()=>flags.add('u', /\a/)).throws(SyntaxError)
+					o(()=>flags.add('u', /\-/)).throws(SyntaxError)
+					o(()=>flags.add('u', /\u1/)).throws(SyntaxError)
+					o(()=>flags.add('u', /\x1/)).throws(SyntaxError)
+					o(()=>flags.add('u', /\u12/)).throws(SyntaxError)
+					o(()=>flags.add('u', /\u123/)).throws(SyntaxError)
+					o(()=>flags.add('u', /((?=())+)/)).throws(SyntaxError)
+				} finally {
+					RegExp = R
+				}
 
-				o(()=>flags('u', /\a/)).throws(SyntaxError)
-				o(()=>flags('u', /\-/)).throws(SyntaxError)
-				o(()=>flags('u', /\u1/)).throws(SyntaxError)
-				o(()=>flags('u', /\x1/)).throws(SyntaxError)
-				o(()=>flags('u', /\u12/)).throws(SyntaxError)
-				o(()=>flags('u', /\u123/)).throws(SyntaxError)
-				RegExp = R
 			})
 
 			o("several u", function () {
@@ -235,6 +372,9 @@ o.spec("flags", function () {
 		o("u contagiosity", function() {
 			o(sequence(/a/u, /b/))
 			.satisfies(r(/ab/u))
+
+			o(sequence(/(?<r>a)/u, ref('r')))
+			.satisfies(r(/(?<r>a)\k<r>/u))
 
 			o(sequence(/a/u, /b/u, /c/))
 			.satisfies(r(/abc/u))
@@ -278,10 +418,11 @@ o.spec("flags", function () {
 		})
 
 		o("ascci and unicode escapes are passed through", function () {
+			o(sequence(/a/u, /\w\s\W\S\d\D \f\n\r\t\v\/\cA/))
+			.satisfies(r(/a\w\s\W\S\d\D \f\n\r\t\v\/\cA/u))
 
-
-			o(sequence(/a/u, /\w\s\W\S\d\D/))
-			.satisfies(r(/a\w\s\W\S\d\D/u))
+			o(sequence(/a/u, /[\w\s\W\S\d\D \f\n\r\t\v\/\cA]/))
+			.satisfies(r(/a[\w\s\W\S\d\D \f\n\r\t\v\/\cA]/u))
 
 			o(sequence(/a/u, /\x12/))
 			.satisfies(r(/a\x12/u))
@@ -297,55 +438,77 @@ o.spec("flags", function () {
 
 		})
 
-		o(". is upgraded", function() {
+
+		o("bad escapes, . and [^] can't be upgraded", function() {
 			o(sequence(/./u, /b/))
 			.satisfies(r(/.b/u))
 
-			const ref = /a(?:(?![\u{10000}-\u{10ffff}]).)/u
+			o(sequence(/[^]/u, /b/))
+			.satisfies(r(/[^]b/u))
 
-			o(sequence(/a/u, /./))
-			.satisfies(r(ref))
-
-			o(sequence(/a/u, [/./]))
-			.satisfies(r(ref))
-
-			o(sequence([/a/u], /./))
-			.satisfies(r(ref))
-
-			o(sequence([/a/u], [/./]))
-			.satisfies(r(ref))
-
-		})
-
-		o("bad escapes can't be upgraded", function() {
 			o(sequence(/a/u, /\+/))
 			.satisfies(r(/a\+/u))
 
 			o(sequence(/a/u, /[\-]/))
 			.satisfies(r(/a[\-]/u))
 
-			o(()=>sequence(/a/u, /\p/)).throws(SyntaxError)
-			o(()=>sequence(/a/u, [/\p/])).throws(SyntaxError)
-			o(()=>sequence([/a/u], /\p/)).throws(SyntaxError)
-			o(()=>sequence([/a/u], [/\p/])).throws(SyntaxError)
+			o(sequence(/a/u, /[\w-]/))
+			.satisfies(r(/a[\w-]/u))
 
-			o(()=>sequence(/a/u, /\-/)).throws(SyntaxError)
-			o(()=>sequence(/a/u, [/\-/])).throws(SyntaxError)
-			o(()=>sequence([/a/u], /\-/)).throws(SyntaxError)
-			o(()=>sequence([/a/u], [/\-/])).throws(SyntaxError)
+			o(sequence(/a/u, /[-\w]/))
+			.satisfies(r(/a[-\w]/u))
 
-			o(() => sequence(/a/u, /\x1/)).throws(SyntaxError)
-			o(() => sequence(/a/u, /[\x1]/)).throws(SyntaxError)
-			o(() => sequence(/a/u, /\u1/)).throws(SyntaxError)
-			o(() => sequence(/a/u, /[\u1]/)).throws(SyntaxError)
-			o(() => sequence(/a/u, /\u12/)).throws(SyntaxError)
-			o(() => sequence(/a/u, /[\u12]/)).throws(SyntaxError)
-			o(() => sequence(/a/u, /\u123/)).throws(SyntaxError)
-			o(() => sequence(/a/u, /[\u123]/)).throws(SyntaxError)
+			o(sequence(/a/u, /[-\w-]/))
+			.satisfies(r(/a[-\w-]/u))
+
+			const R = RegExp
+			RegExp = ()=>{}
+			try {
+				o(()=>sequence(/a/u, /./)).throws(SyntaxError)
+				o(()=>sequence(/a/u, [/./])).throws(SyntaxError)
+				o(()=>sequence([/a/u], /./)).throws(SyntaxError)
+				o(()=>sequence([/a/u], [/./])).throws(SyntaxError)
+	
+				o(()=>sequence(/a/u, /[^]/)).throws(SyntaxError)
+				o(()=>sequence(/a/u, [/[^]/])).throws(SyntaxError)
+				o(()=>sequence([/a/u], /[^]/)).throws(SyntaxError)
+				o(()=>sequence([/a/u], [/[^]/])).throws(SyntaxError)
+	
+				o(()=>sequence(/a/u, /\p/)).throws(SyntaxError)
+				o(()=>sequence(/a/u, [/\p/])).throws(SyntaxError)
+				o(()=>sequence([/a/u], /\p/)).throws(SyntaxError)
+				o(()=>sequence([/a/u], [/\p/])).throws(SyntaxError)
+	
+				o(()=>sequence(/a/u, /\k/)).throws(SyntaxError)
+				o(()=>sequence(/a/u, [/\k/])).throws(SyntaxError)
+				o(()=>sequence([/a/u], /\k/)).throws(SyntaxError)
+				o(()=>sequence([/a/u], [/\k/])).throws(SyntaxError)
+	
+				o(()=>sequence(/a/u, /\k<:>/)).throws(SyntaxError)
+	
+				o(()=>sequence(/a/u, /\-/)).throws(SyntaxError)
+				o(()=>sequence(/a/u, [/\-/])).throws(SyntaxError)
+				o(()=>sequence([/a/u], /\-/)).throws(SyntaxError)
+				o(()=>sequence([/a/u], [/\-/])).throws(SyntaxError)
+	
+				o(() => sequence(/a/u, /\x1/)).throws(SyntaxError)
+				o(() => sequence(/a/u, /[\x1]/)).throws(SyntaxError)
+				o(() => sequence(/a/u, /\u1/)).throws(SyntaxError)
+				o(() => sequence(/a/u, /[\u1]/)).throws(SyntaxError)
+				o(() => sequence(/a/u, /\u12/)).throws(SyntaxError)
+				o(() => sequence(/a/u, /[\u12]/)).throws(SyntaxError)
+				o(() => sequence(/a/u, /\u123/)).throws(SyntaxError)
+				o(() => sequence(/a/u, /[\u123]/)).throws(SyntaxError)
+
+				o(()=>sequence(/a/u, /[\w-x]/)).throws(SyntaxError)
+				o(()=>sequence(/a/u, /[x-\w]/)).throws(SyntaxError)
+	
+				o(() => sequence(/a/u, /((?=())+)/)).throws(SyntaxError)
+			} finally {
+				RegExp = R
+			}
 
 
-			// TODO: Autmatically fix lone brackets.
-			// This requires a two pass approach
 		})
 		o("lone brackets are automatically escaped", function() {
 			o(sequence(/]/, /a/u)).satisfies(r(/\]a/u))
@@ -384,102 +547,133 @@ o.spec("flags", function () {
 			o(sequence(/[-}[]/, /a/u)).satisfies(r(/[-}[]a/u))
 
 		})
-		o.spec("flag operations", function() {
-			o("signature", function() {
-				o(flags.add("i", "aha")).satisfies(r(/aha/i))
+	})
+	o.spec("flag operations", function() {
+		o("signature", function() {
+			o(flags.add("i", "aha")).satisfies(r(/aha/i))
 
-				o(flags.remove("i", /aha/i)).satisfies(r(/aha/))
+			o(flags.add("i")("aha", /ho/)).satisfies(r(/ahaho/i))
 
-				o(flags.add("i")("aha")).satisfies(r(/aha/i))
+			// type checks and arity
+			o(()=>flags.add(2, "sd")).throws(Error)
+			o(()=>flags.add("a", "b", "c")).throws(Error)
+			o(()=>flags.add(2)).throws(Error)
+			o(()=>flags.add("a")("b", "c")).throws(Error)
+			o(()=>flags.add("uii", /f/m)).throws(Error)
+			o(()=>flags.add("iui", /f/m)).throws(Error)
+		})
+		o("flags.add", function() {
+			o(flags.add("i", /f/g)).satisfies(r(/f/i))
 
-				o(flags.remove("i")(/aha/i)).satisfies(r(/aha/))
+			o(flags.add("m", /f/i)).satisfies(r(/f/im))
 
-				// type checks and arity
-				o(()=>flags.add(2, "sd")).throws(Error)
-				o(()=>flags.add("a", "b", "c")).throws(Error)
-				o(()=>flags.add(2)).throws(Error)
-				o(()=>flags.add("a")("b", "c")).throws(Error)
-				o(()=>flags.remove(2, "sd")).throws(Error)
-				o(()=>flags.remove("a", "b", "c")).throws(Error)
-				o(()=>flags.remove(2)).throws(Error)
-				o(()=>flags.remove("a")("b", "c")).throws(Error)
-			})
-			o("flags.add", function() {
-				// o(flags.add("i", /f/m)).satisfies(r(/f/im))
+			o(flags.add("m", /f/m)).satisfies(r(/f/m))
 
-				// o(flags.add("m", /f/i)).satisfies(r(/f/im))
+			o(flags.add("u", /f/u)).satisfies(r(/f/u))
 
-				// o(flags.add("m", /f/m)).satisfies(r(/f/m))
+			o(flags.add("ui", /f/g)).satisfies(r(/f/iu))
 
-				// o(flags.add("u", /f/u)).satisfies(r(/f/u))
+			o(flags.add("m", /f/ui)).satisfies(r(/f/imu))
 
-				o(flags.add("ui", /f/m)).satisfies(r(/f/imu))
-
-				o(flags.add("m", /f/ui)).satisfies(r(/f/imu))
-
-			})
-			o("flags.remove", function() {
-				o(flags.remove("i", /u/i)).satisfies(r(/u/))
-
-				o(flags.remove("i", /u/ium)).satisfies(r(/u/mu))
-
-				o(flags.remove("i", /u/)).satisfies(r(/u/))
-
-				// you can't remove the u
-				o(flags.remove("u", /u/ium)).satisfies(r(/u/imu))
-
-				o(flags.remove("u", /u/u)).satisfies(r(/u/u))
-
-				o(flags.remove("ium", /u/u)).satisfies(r(/u/u))
-
-				o(flags.remove("ium", /u/ium)).satisfies(r(/u/u))
-
-			})
 		})
 	})
 })
 
 o.spec('suffix', function(){
 	o('works', function(){
-		[
+		function n(op) {
+			return typeof op === 'string' ? op : '{' + String(op) + '}'
+		}
+		void [
 		'*', '+', '?', '{2}', '{2,}', '{2,4}',
 		'*?', '+?', '??', '{2}?', '{2,}?', '{2,4}?',
+		0, 1, 2, [0], [1], [2], [0, 1], [1, 1], [3,,],
 		].forEach(function(op){
 			o(suffix(op, 'a'))
-			.satisfies(r(new RegExp('a' + op)))
+			.satisfies(r(new RegExp('a' + n(op))))
 
 			o(suffix(op, /foo/))
-			.satisfies(r(new RegExp('(?:foo)' + op)))
+			.satisfies(r(new RegExp('(?:foo)' + n(op))))
 
 			o(suffix(op, /a|b/))
-			.satisfies(r(new RegExp('(?:a|b)' + op)))
+			.satisfies(r(new RegExp('(?:a|b)' + n(op))))
 
 			o(suffix(op, /(a)b/))
-			.satisfies(r(new RegExp('(?:(a)b)' + op)))
+			.satisfies(r(new RegExp('(?:(a)b)' + n(op))))
+
+			o(suffix(op, /(ab)/))
+			.satisfies(r(new RegExp('(ab)' + n(op))))
+
+			o(suffix(op, /(?:ab)/))
+			.satisfies(r(new RegExp('(?:ab)' + n(op))))
+
+			o(suffix(op, /(?<AB>ab)/))
+			.satisfies(r(new RegExp('(?<AB>ab)' + n(op))))
 
 		})
 	})
-	o('invalid ranges throw', function(){
-		['a', '5.', '{5.4}'].forEach(function(op){
-			o(function() { suffix(op, 'a') }).throws(Error)
-			o(function() { suffix(op) }).throws(Error)
-
+	o('invalid quantifiers throw', function() {
+		void ['a', '5.', '{5.4}', 'a', '{1,0}'].forEach(function(op) {
+			const R = RegExp
+			RegExp = ()=>{}
+			try {
+				o(function() { suffix(op, 'a') }).throws(SyntaxError)
+				o(function() { suffix(op) }).throws(SyntaxError)
+			} finally {
+				RegExp = R
+			}
 		})
+	})
+	o('assertions are handled properly', function() {
+		const R = RegExp
+		RegExp = ()=>{}
+		try {
+			void [
+				'*',
+				'+', '?', '{2}', '{2,}', '{2,4}',
+				'*?', '+?', '??', '{2}?', '{2,}?', '{2,4}?',
+			].forEach(function(op){
+				o(()=>suffix(op)()).throws(SyntaxError)
+
+				o(()=>suffix(op, /\b/)).throws(SyntaxError)
+				o(()=>suffix(op, /\B/)).throws(SyntaxError)
+
+				// we're stricter than the spec here
+				o(()=>suffix(op, /(?=)/)).throws(SyntaxError)
+				o(()=>suffix(op, /(?!)/)).throws(SyntaxError)
+
+				o(()=>suffix(op, /(?<=)/)).throws(SyntaxError)
+				o(()=>suffix(op, /(?<!)/)).throws(SyntaxError)
+
+
+				o(()=>suffix(op, /\b/u)).throws(SyntaxError)
+				o(()=>suffix(op, /\B/u)).throws(SyntaxError)
+
+				o(()=>suffix(op, /(?=)/u)).throws(SyntaxError)
+				o(()=>suffix(op, /(?!)/u)).throws(SyntaxError)
+
+				o(()=>suffix(op, /(?<=)/u)).throws(SyntaxError)
+				o(()=>suffix(op, /(?<!)/u)).throws(SyntaxError)
+			})
+		} finally {
+			RegExp = R
+		}
 	})
 })
 
 // Tests for an inner helper
 o.spec('parsers', function(){
 	o('hasTopLevelChoice', function(){
-		o(hasTopLevelChoice('ab')).equals(false)
-		o(hasTopLevelChoice('[a]b')).equals(false)
-		o(hasTopLevelChoice('[a|]b')).equals(false)
-		o(hasTopLevelChoice('[|a]b')).equals(false)
-		o(hasTopLevelChoice('[a|b]')).equals(false)
-		o(hasTopLevelChoice('(a|b)')).equals(false)
-		o(hasTopLevelChoice('a|b')).equals(true)
-		o(hasTopLevelChoice('[a]|b')).equals(true)
-		o(hasTopLevelChoice(/[a\]|]b/.source)).equals(false)
+		o(isDisjunction({source: 'ab', value: {}})).equals(false)
+		o(isDisjunction({source: '[a]b', value: {}})).equals(false)
+		o(isDisjunction({source: '[a|]b', value: {}})).equals(false)
+		o(isDisjunction({source: '[|a]b', value: {}})).equals(false)
+		o(isDisjunction({source: '[a|b]', value: {}})).equals(false)
+		o(isDisjunction({source: '(a|b)', value: {}})).equals(false)
+		o(isDisjunction({source: 'a|b', value: {}})).equals(true)
+		o(isDisjunction({source: '(a)|(b)', value: {}})).equals(true)
+		o(isDisjunction({source: '[a]|b', value: {}})).equals(true)
+		o(isDisjunction({source: /[a\]|]b/.source, value: {}})).equals(false)
 
 	})
 })
@@ -507,12 +701,29 @@ o.spec("refs", function () {
 	})
 
 	o("naked refs are adjusted", function() {
-		o(sequence(/()/, /\1/))
-		.satisfies(r(/()\2/))
+		o(sequence(/()/, /()\1/))
+		.satisfies(r(/()()\2/))
 
-		o(either(/()/, /\1/))
-		.satisfies(r(/()|\2/))
+		o(either(/()/, /()\1/))
+		.satisfies(r(/()|()\2/))
 
+		o(sequence(/()/, /\0/))
+		.satisfies(r(/()\0/))
+
+	})
+
+	o("refs in final position are handled properly", function() {
+		o(sequence(/(a)\1/, "2"))
+		.satisfies(r(/(a)\1(?:)2/))
+
+		o(sequence(/(a)\1/, "a"))
+		.satisfies(r(/(a)\1a/))
+
+		o(sequence(sequence(capture("a"), ref(1)), "2"))
+		.satisfies(r(/(a)\1(?:)2/))
+
+		o(sequence(sequence(capture("a"), ref(1)), "a"))
+		.satisfies(r(/(a)\1a/))
 
 	})
 
@@ -591,19 +802,112 @@ o.spec("refs", function () {
 
 	})
 	o("named captures and refs", function () {
-		o(flags("u", namedCapture("b", /a/), ref("b"))).satisfies(r(/(?<b>a)\k<b>/u))
+		o(sequence(namedCapture("b")))
+		.satisfies(r(/(?<b>)/))
 
-		o(flags("u", namedCapture("boo", /a/), ref("boo"))).satisfies(r(/(?<boo>a)\k<boo>/u))
+		o(namedCapture("b")())
+		.satisfies(r(/(?<b>)/))
 
-		o(flags("u", namedCapture("_$", /a/), ref("_$"))).satisfies(r(/(?<_$>a)\k<_$>/u))
+		o(()=>ref(":")).throws(SyntaxError)
 
-		o(flags("u", namedCapture("$_$", /a/), ref("$_$"))).satisfies(r(/(?<$_$>a)\k<$_$>/u))
+		o(flags.add("u", namedCapture("b", /a/), ref("b")))
+		.satisfies(r(/(?<b>a)\k<b>/u))
 
-		o(()=>flags("u", namedCapture("1b", /a/))).throws(SyntaxError)
-		o(()=>flags("u", ref("b"))).throws(SyntaxError)
+		o(flags.add("u", namedCapture("boo", /a/), ref("boo")))
+		.satisfies(r(/(?<boo>a)\k<boo>/u))
+
+		o(flags.add("u", namedCapture("_$", /a/), ref("_$")))
+		.satisfies(r(/(?<_$>a)\k<_$>/u))
+
+		o(flags.add("u", namedCapture("$_$", /a/), ref("$_$")))
+		.satisfies(r(/(?<$_$>a)\k<$_$>/u))
+
+		o(()=>flags.add("u", namedCapture("1b", /a/))).throws(SyntaxError)
+		o(()=>flags.add("u", ref("b"))).throws(SyntaxError)
 	})
 })
 
+o.spec("backwards and atoms", function() {
+	const backwards = (f) => {
+		let bw
+		lookBehind(() => {return bw = f()})
+		return bw
+	}
+  let fw, bw, fwr, bwr, neutral
+	o.beforeEach(function() {
+		fw = atomic()
+		bw = backwards(()=>atomic())
+	
+		fwr = ref(1)
+		bwr = backwards(() => ref(1))
+
+		neutral = sequence('a', 'b')
+	
+	})
+
+	o("works", function() {
+		o(fw).satisfies(r(/(?=())\1/))
+		o(bw).satisfies(r(/\1(?<=())/))
+		o(typeof fwr).equals('function')
+		o(typeof bwr).equals('function')
+
+	})
+
+	o("composition in the right context works", function() {
+		o(sequence(fw, 'a')).satisfies(r(/(?=())\1a/))
+
+		o(sequence(fwr, 'a')).satisfies(r(/\1a/))
+
+		o(backwards(()=>sequence(bw, 'a'))).satisfies(r(/\1(?<=())a/))
+
+		o(backwards(()=>sequence(bwr, 'a'))).satisfies(r(/\1a/))
+
+		o(sequence(neutral, "o")).satisfies(r(/abo/))
+
+		o(backwards(()=>sequence(neutral, 'a'))).satisfies(r(/aba/))
+
+	})
+
+	o("composition in the wrong context throws", function() {
+		o(()=>sequence(bw)).throws(TypeError)
+		o(()=>sequence(bwr)).throws(TypeError)
+
+		o(()=>backwards(()=>sequence(fw))).throws(TypeError)
+		o(()=>backwards(()=>sequence(fwr))).throws(TypeError)
+
+	})
+
+	o("composition is contagious", function() {
+		const fw2 = sequence(fw, 'a')
+		const bw2 = backwards(()=>sequence(bw,'a'))
+		const fwr2 = sequence(fwr, 'a')
+		const bwr2 = backwards(()=>sequence(bwr,'a'))
+
+		o(()=>sequence(bw2)).throws(TypeError)
+		o(()=>sequence(bwr2)).throws(TypeError)
+		o(()=>backwards(()=>sequence(fw2))).throws(TypeError)
+		o(()=>backwards(()=>sequence(fwr2))).throws(TypeError)
+
+	})
+
+	o("look behind assertions", function() {
+		o(lookBehind(()=>['a', 'b']))
+		.satisfies(r(/(?<=ab)/))
+
+		o(lookBehind(()=>['a', notBehind('b')]))
+		.satisfies(r(/(?<=a(?<!b))/))
+
+		o(lookBehind(()=>['a', notBehind(':', atomic(/\w*/))]))
+		.satisfies(r(/(?<=a(?<!:\1(?<=(\w*))))/))
+
+		o(sequence(lookBehind('a'), /a/))
+		.satisfies(r(/(?<=a)a/))
+
+		o(sequence(notBehind(()=>atomic('a')), /a/))
+		.satisfies(r(/(?<!\1(?<=(a)))a/))
+
+	})
+})
 
 o.spec("integration", function() {
 	o("string", function() {
@@ -622,7 +926,7 @@ o.spec("integration", function() {
 		o(str).satisfies(r(/(?=(('|")(?:\\[^]|.)*?\2))\1/))
 
 		o(str.test('""')).equals(true)
-
+	
 		result = capture(str).exec('""')
 		o(Array.isArray(result)).equals(true)
 		o(result).deepEquals(Object.assign([ '""', '""', '""', '"'], {index: 0, input:'""', groups: undefined}))
@@ -645,7 +949,7 @@ o.spec("integration", function() {
 		)))
 
 
-		const e = flags("g",
+		const e = flags.add("g",
 			either(
 				tag("whiteSpace", ws),
 				tag("url", atomic(["url(", suffix("?", ws), str, suffix("?", ws), ")"])),
@@ -670,13 +974,14 @@ o.spec("integration", function() {
 
 		/* jojo
 		*/
-	 url( "dada" )
-	 url("dada")
-	 "
+		url( "dada" )
+		url("dada")
+		"
 		`
 		e.lastIndex = 0
 
 		while((result = e.exec(source)) && !(result.groups.error )){
+			// console.log({result})
 		}
 		o(result.groups.error).equals('"')
 		o(result.index).equals(62)
@@ -685,9 +990,9 @@ o.spec("integration", function() {
 
 		/* jojo
 		*/
-	 url( "dada" )
-	 url("dada")
-	 //"
+		url( "dada" )
+		url("dada")
+		//"
 		`
 		e.lastIndex = 0
 

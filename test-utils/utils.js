@@ -1,6 +1,6 @@
 import o from 'ospec'
 
-function calledFrom(n=0) {
+export function calledFrom(n=0) {
 	try {throw new Error()} catch(e) {return e.stack.split("\n")[2+n].replace(/^\s*/, "")}
 }
 
@@ -14,19 +14,21 @@ function spy(f) {
 }
 
 function strip(s) {
-    // normalize the format
+	// normalize the format
 	return (s.indexOf("(") === -1) ? s.slice(3) : s.replace(/^[^\(]+\(|\)$/g, '')
 }
+
 function sort(ary) {
 	return ary.map(strip).sort(function(a, b) {
 		const [nameA, lineA, colA] = a.split(':')
 		const [nameB, lineB, colB] = b.split(':')
-        // const [name, line, col] = partsA
+		// const [name, line, col] = partsA
 		return nameA.localeCompare(nameB)
 		|| Number(lineA) - Number(lineB)
 		|| Number(colA) - Number(colB)
 	})
 }
+
 Object.entries(console).forEach(([k, v]) => {
 	console[k] = spy(v)
 })
@@ -74,13 +76,35 @@ export function r(ref){
 		if (candidate.source !== ref.source) errors++
 		if (candidate.flags !== ref.flags) errors++
 
-        return errors === 0
-        ? {pass: true, message: "" + candidate + " shouldn't have matched its reference"}
-        : {pass: false, message: (
-            "RegExp mismatch:\n\t/"
-            + ref.source + "/" + ref.flags
-            + "\nshould be\n\t/"
-            + candidate.source + "/" + candidate.flags
-        )}
+		return errors === 0
+		? {pass: true, message: "" + candidate + " shouldn't have matched its reference"}
+		: {pass: false, message: (
+			"RegExp mismatch:\n\t/"
+			+ candidate.source + "/" + candidate.flags
+			+ "\nshould be\n\t/"
+			+ ref.source + "/" + ref.flags
+		)}
 	}
 }
+
+let c = 0
+const alreadyPrinted = Object.create(null)
+global.TODO = (...items) => {
+	const cf = calledFrom(1)
+	const text = items.map(x=> "- "+x).join("\n")
+	const callSite = calledFrom(1)
+	const key = JSON.stringify([text, callSite])
+	if(alreadyPrinted[key]) return
+	alreadyPrinted[key] = true
+	try{
+		o().satisfies(()=>({pass: false, message: "TODO " + ++c + ":\n\n" + text + "\n\n" + cf}))
+	}catch(e){
+		o("TODO "+ ++c, ()=>{
+			o().satisfies(()=>({
+				pass: false, 
+				message: "\n" + text + "\n\n" + cf}))
+		})
+	}
+} 
+
+global.p = (a, ...x) => (console.log(calledFrom(1),"\n",a, ...x), a)
