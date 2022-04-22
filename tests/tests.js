@@ -4,7 +4,7 @@ import o from 'ospec'
 import {nullProto, r} from '../test-utils/utils.js'
 
 import {
-	atomic, avoid, bound, capture, charSet, either,
+	atomic, notAhead, bound, capture, charSet, either,
 	flags, lookAhead, lookBehind, namedCapture,
 	notBehind, ref, sequence, suffix
 } from '../compose-regexp.js'
@@ -22,7 +22,7 @@ o.spec("general", function () {
 	o('string and a lack of arguments are normalized', function(){
 		void [
 			either, sequence,
-			lookAhead, avoid,
+			lookAhead, notAhead,
 			flags.add(''), capture
 		].forEach(function(f) {
 			// normalization
@@ -102,14 +102,14 @@ o('sequence', function() {
 
 })
 
-o('avoid', function(){
-	o(avoid('a'))
+o('notAhead', function(){
+	o(notAhead('a'))
 	.satisfies(r(/(?!a)/))
 
-	o(avoid('a', 'b'))
+	o(notAhead('a', 'b'))
 	.satisfies(r(/(?!ab)/))
 
-	o(avoid('a', 'b', 'c'))
+	o(notAhead('a', 'b', 'c'))
 	.satisfies(r(/(?!abc)/))
 
 })
@@ -356,10 +356,10 @@ o.spec("flags", function () {
 			o(suffix("*", /a/u, /b/u, /c/u))
 			.satisfies(r(/(?:abc)*/u))
 
-			o(avoid(/a/u, /b/u))
+			o(notAhead(/a/u, /b/u))
 			.satisfies(r(/(?!ab)/u))
 
-			o(avoid(/a/u, /b/u, /c/u))
+			o(notAhead(/a/u, /b/u, /c/u))
 			.satisfies(r(/(?!abc)/u))
 
 			o(lookAhead(/a/u, /b/u))
@@ -391,10 +391,10 @@ o.spec("flags", function () {
 			o(suffix("*", /a/u, /b/, /c/u))
 			.satisfies(r(/(?:abc)*/u))
 
-			o(avoid(/a/u, /b/))
+			o(notAhead(/a/u, /b/))
 			.satisfies(r(/(?!ab)/u))
 
-			o(avoid(/a/, /b/u, /c/u))
+			o(notAhead(/a/, /b/u, /c/u))
 			.satisfies(r(/(?!abc)/u))
 
 			o(lookAhead(/a/u, /b/))

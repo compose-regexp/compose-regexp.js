@@ -9,6 +9,7 @@ This version revamps the core to provide better support for the `u` flag. The `r
 
 ### Breakin changes
 
+- `avoid()` becomes `notAhead()` (mirroring the newly introduced `lookBehind()`, `notBehind()` scheme).
 - back references (e.g. `\1`) are now updated when regexps that hold them are combined. `sequence(/(.)\1/, /(.)\1/)` returns `/(.)\1(.)\2/`
 - `ref()` now returns a thunk, to let one create back references programmatically. `sequence(/(.)/, ref(1))` returns `/(.)\1/`
 - The `u` flag is now contagious, non-unicode RegExps are promoted to unicode when possible.

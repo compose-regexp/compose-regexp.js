@@ -462,7 +462,7 @@ function $$_reentrantRefCapFlag(f) {
 
 export function decorate(x, options) {
 	// console.log({x, options})
-	if(!options.condition || options.condition(x)) x.source = options.wrapper[0] + (x.source || '') + options.wrapper[1]
+	if(!options.condition || options.condition(x)) x.source = options.open + (x.source || '') + ')'
 	if (options.suffix) x.source += options.suffix
 	return x
 }
@@ -470,7 +470,7 @@ export function decorate(x, options) {
 function wrapIfTopLevelDisjunction(x) {
 	return decorate(x, {
 		condition: function(x) { return (x.kind === 'regexp' || x.kind === 'result') && isDisjunction(x)},
-		wrapper: ['(?:', ')']
+		open: '(?:'
 	})
 }
 

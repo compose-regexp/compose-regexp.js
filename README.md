@@ -134,16 +134,17 @@ maybe(...exprs) // shortcut for `suffix('?', ...)`
 flags.add(flags, ...exprs) // add flags
 
 
-// predicates
-avoid(...exprs)     // negative lookAhead: /(?!...)/
-lookAhead(...exprs) // positive lookahead: /(?=...)/
-lookBehind(...exprs) // positive behind: /(?<=...)/
-notBehind(...exprs) // negative behind: /(?<!...)/
-
 // captures and references
 capture(...exprs)
-namedCapture(label, ..exprs.)
+namedCapture(label, ...exprs)
 ref(nuberOrLabel)
+
+
+// predicates
+lookAhead(...exprs) // positive look ahead: /(?=...)/
+notAhead(...exprs)     // negative look ahead: /(?!...)/
+lookBehind(...exprs) // positive look behind: /(?<=...)/
+notBehind(...exprs) // negative look behind: /(?<!...)/
 
 // other functions
 atomic(...exprs) // helper to prevent backtracking
@@ -154,6 +155,9 @@ charSet.union(...cs) // character that match any of the provided charsets
 charSet.difference(a, b) // characters that match charSet `a` and don't match charSet `b`
 charSet.intersection(a, b) // characters that match both charSet `a` and charSet `b`
 
+// The lack of non-capturing group API is deliberate. We insert them
+// automatically where needed, they are not a user concern when using
+// this lib.
 ```
 
 ### General notes:
@@ -183,17 +187,6 @@ Therefore:
 - Back references (`\1`, etc...) are automatically upgraded suc that `sequence(/(\w)\1/, /(\d)\1/)` becomes `/(\w)\1(\d)\2/`. The `ref()` function lets one create refs programmatically:
 
 ### details
-
-----
-
-#### flags(opts, ...exprs), flags(opts)(...exprs)
-
-```JavaScript
-> flags('gm', /a/)
-/a/gm
-> global = flags(g); global('a')
-/a/g
-```
 
 ----
 
@@ -273,49 +266,31 @@ shorcut for the `?` quantifier
 
 ----
 
-#### lookAhead(...exprs)
+#### flags(opts, ...exprs), flags(opts)(...exprs)
 
-```JS
-> lookAhead(/a/, /b/, /c/)
-/(?=abc)/
+```JavaScript
+> flags('gm', /a/)
+/a/gm
+> global = flags(g); global('a')
+/a/g
 ```
 
 ----
 
-#### avoid(...exprs)
+#### capture(...exprs) : RegExp
 
-Negative look ahead
+Create an anonymous capturing group.
 
 ```JS
-> avoid(/a/, /b/, /c/)
-/(?!abc)/
+> capture(/a/, /b/, /c/)
+/(abc)/
 ```
 
 ----
 
-#### lookBehind(...exprs)
+#### namedCapture(...exprs) : RegExp
 
-Look behind
-
-```JS
-> lookBehind(/a/, /b/, /c/)
-/(?<=abc)/
-```
-
-----
-
-#### notBehind(...exprs)
-
-Negative look behind
-
-```JS
-> notBehind(/a/, /b/, /c/)
-/(?<!abc)/
-```
-
-----
-
-#### capture (...exprs) : RegExp
+Create an named capturing group.
 
 ```JS
 > capture(/a/, /b/, /c/)
@@ -344,6 +319,50 @@ See the [back references](#back-references) section below for a detailed descrip
 // a ref to a capture two levels up the call stack
 > sequence(capture(/\w/), either(capture(ref(1,2)), /./u))
 /(\w)(?:(\1)|.)/u
+```
+
+----
+
+#### lookAhead(...exprs)
+
+Positive look ahead.
+
+```JS
+> lookAhead(/a/, /b/, /c/)
+/(?=abc)/
+```
+
+----
+
+#### notAhead(...exprs)
+
+Negative look ahead.
+
+```JS
+> notAhead(/a/, /b/, /c/)
+/(?!abc)/
+```
+
+----
+
+#### lookBehind(...exprs)
+
+Positive look behind.
+
+```JS
+> lookBehind(/a/, /b/, /c/)
+/(?<=abc)/
+```
+
+----
+
+#### notBehind(...exprs)
+
+Negative look behind.
+
+```JS
+> notBehind(/a/, /b/, /c/)
+/(?<!abc)/
 ```
 
 ----
