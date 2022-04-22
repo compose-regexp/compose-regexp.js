@@ -1,8 +1,6 @@
 
 import {allFlags, canFoldM, hasOwn, identity, map, RegExpRef, store, supportsU, unescape} from "./utils.js"
 
-import {isRef} from './ref.js'
-
 // General notes:
 // 
 // 1. Most functions here take an `x` parameter, which is our internal representation
@@ -167,14 +165,14 @@ var countCaptures = mdMemo('captureCount', function countCaptures(x) {
 	return count
 })
 
-var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})/g
+var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\(\?:\$ \^depth:(\d+),n:(\d+)\)/g
 
 var hasRefs = mdMemo('hasRefs', function hasRefs(x) {
 	var hasRefs = false, hasFinalRef = false, inCClass = false, result
 	numRefMatcher.lastIndex = 0
 	while(result = numRefMatcher.exec(x.source)) {
-		// const [match, refIndex] = result
-		if (!inCClass && result[1] != null) {
+		// const [match, refIndex, depth, thunkIndex] = result
+		if (!inCClass && (result[1] != null || result[2] != null)) {
 			hasRefs = true
 			if (numRefMatcher.lastIndex === x.source.length) hasFinalRef = true
 			continue
@@ -296,18 +294,21 @@ function promoteNonUnicodeToUnicode (source) {
 function $$_fixRefs(initialOffset) {
 	var count = initialOffset
 	return function (x) {
-		if (x.kind === 'ref') {
-			$refAndCap.hasRefs = $refAndCap.hasFinalRef = true
-		} else if (x.kind === 'regexp' || x.kind === 'result') {
-			if (count > 0 && hasRefs(x)) {
+		if (x.kind === 'regexp' || x.kind === 'result') {
+			if (hasRefs(x)) {
 				$refAndCap.hasRefs = true
 				var inCClass = false
-				x.source = x.source.replace(numRefMatcher, function(match, refIndex) {
-					if (!inCClass && refIndex != null) {
-						var fixedRefIndex = (Number(refIndex) + count)
-						if (fixedRefIndex > 99) throw new RangeError("Too many back references")
+				x.source = x.source.replace(numRefMatcher, function(match, refIndex, depth, thunkIndex) {
+					if (!inCClass) {
+						if (refIndex != null) {
+							var fixedRefIndex = (Number(refIndex) + count)
+							if (fixedRefIndex > 99) throw new RangeError("Too many back references")
 
-						return '\\' + String(fixedRefIndex)
+							return '\\' + String(fixedRefIndex)
+						} else if (depth != null) {
+							if (depth === '0') return '\\' + String(thunkIndex)
+							else return '(?:$ ^depth:' + (Number(depth) -1) + ',n:' + thunkIndex + ')'
+						}
 					}
 					if (match === '[') inCClass = true
 					else if (match === ']') inCClass = false
@@ -492,12 +493,6 @@ export function assemble(patterns, either, contextRequiresWrapping, initialCapIn
 	contextRequiresWrapping = contextRequiresWrapping || patterns.length > 1
 	return map.call(patterns, function processItem(item) {
 		return (
-			isRef(item) ? $$_checkDirection({
-				key: item,
-				kind: 'ref',
-				source: item()
-			})
-			: (
 				// [1] see comment above
 				(!either && contextRequiresWrapping) ? wrapIfTopLevelDisjunction : identity
 			)(
@@ -511,7 +506,6 @@ export function assemble(patterns, either, contextRequiresWrapping, initialCapIn
 				}))
 				: handleOtherTypes(item, contextRequiresWrapping)
 			)
-		)
 		// fixForFlags and $$_fixRefs can't be inlined in the first mat, above they rely on side effects of the
 		// `check` functions having all happenned before they run.
 		// at best they could be combined into a single function.

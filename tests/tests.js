@@ -847,9 +847,12 @@ o.spec("backwards and atoms", function() {
 
 	o("works", function() {
 		o(fw).satisfies(r(/(?=())\1/))
+
 		o(bw).satisfies(r(/\1(?<=())/))
-		o(typeof fwr).equals('function')
-		o(typeof bwr).equals('function')
+
+		o(fwr).satisfies(r(/(?:$ ^depth:0,n:1)/))
+
+		o(bwr).satisfies(r(/(?:$ ^depth:0,n:1)/))
 
 	})
 

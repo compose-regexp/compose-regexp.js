@@ -2,8 +2,6 @@ import {slice, supportsU, unescape} from './utils.js'
 
 import {assemble, decorate, $direction, finalize, flagsMatcher, $flagValidator, groupNameMatcher, metadata, needsWrappingForQuantifier, $$_resetRefCapsAndFlags} from './core.js'
 
-import {Ref} from './ref.js'
-
 
 //- - - - - - - - - - -//
 // - - ~ - -   - -   - //
@@ -97,15 +95,17 @@ function checkRef(name) {
 	|| type === 'number' && 0 < name && Math.round(name) === name
 }
 
-export function ref(n) {
+export function ref(n, depth) {
 	if (!checkRef(n)) throw new SyntaxError("Bad ref: " + n)
-    return typeof n === 'string' 
-	? new RegExp('\\k<' + n + '>')
-	:metadata.set(Ref(n), {
+	if ((depth != null) && (typeof depth !== 'number' || depth < 1 || (depth !== depth|0))) throw new RangeError("Bad depth: " + depth)
+    if (typeof n === 'string') return new RegExp('\\k<' + n + '>')
+	var result = new RegExp('(?:$ ^depth:' + (depth || '0')+ ",n:" + n + ")")
+	metadata.set(result, {
         direction: $direction.current,
         hasFinalRef: true,
         hasRefs: true,
     })
+	return result
 }
 
 export function capture() {
