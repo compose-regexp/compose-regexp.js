@@ -182,6 +182,13 @@ function csInter(a, b) {return sequence(avoid(csDiff(a, b)), a)}
 
 export var charSet = {
 	union: either,
-	diff: csDiff,
-	inter: csInter
+	difference: csDiff,
+	intersection: csInter
+}
+
+export function bound() {
+	return either(
+		[notBehind.apply(null, arguments), lookAhead.apply(null, arguments)],
+		[lookBehind.apply(null, arguments), avoid.apply(null, arguments)]
+	)
 }

@@ -1,5 +1,5 @@
 export {
-    atomic, avoid, capture, charSet, 
+    atomic, avoid, bound, capture, charSet, 
     either, flags, lookAhead, lookBehind, 
     maybe, namedCapture, notBehind, ref,
     sequence, suffix

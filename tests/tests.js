@@ -4,8 +4,8 @@ import o from 'ospec'
 import {nullProto, r} from '../test-utils/utils.js'
 
 import {
-	atomic, avoid, capture, charSet, either, flags,
-	lookAhead, lookBehind, namedCapture,
+	atomic, avoid, bound, capture, charSet, either,
+	flags, lookAhead, lookBehind, namedCapture,
 	notBehind, ref, sequence, suffix
 } from '../compose-regexp.js'
 
@@ -418,8 +418,8 @@ o.spec("flags", function () {
 		})
 
 		o("ascci and unicode escapes are passed through", function () {
-			o(sequence(/a/u, /\w\s\W\S\d\D \f\n\r\t\v\/\cA/))
-			.satisfies(r(/a\w\s\W\S\d\D \f\n\r\t\v\/\cA/u))
+			o(sequence(/a/u, /\w\s\W\S\d\D \f\n\r\t\v\b\B\/\cA/))
+			.satisfies(r(/a\w\s\W\S\d\D \f\n\r\t\v\b\B\/\cA/u))
 
 			o(sequence(/a/u, /[\w\s\W\S\d\D \f\n\r\t\v\/\cA]/))
 			.satisfies(r(/a[\w\s\W\S\d\D \f\n\r\t\v\/\cA]/u))
@@ -937,23 +937,31 @@ o.spec("README Examples", function() {
 		o(abcd.test('d')).equals(true)
 
 
-		const ab = charSet.diff(/[abcd]/, /[cd]/)
+		const ab = charSet.difference(/[abcd]/, /[cd]/)
 
 		o(ab.test('a')).equals(true)
 		o(ab.test('b')).equals(true)
 		o(ab.test('c')).equals(false)
 		o(ab.test('d')).equals(false)
 
-		const bc = charSet.inter(/[a-c]/, /[b-d]/)
+		const bc = charSet.intersection(/[a-c]/, /[b-d]/)
 
 		o(bc.test('a')).equals(false)
 		o(bc.test('b')).equals(true)
 		o(bc.test('c')).equals(true)
 		o(bc.test('d')).equals(false)
 
-		const LcCyrl = charSet.inter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
+		const LcCyrl = charSet.intersection(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
 		o(LcCyrl.test("б")).equals(true)
 		o(LcCyrl.test("Б")).equals(false)
+
+	})
+})
+
+o.spec("bound", function() {
+	o("works", function() {
+		o(bound(/a/))
+		.satisfies(r(/(?<!a)(?=a)|(?<=a)(?!a)/))
 
 	})
 })

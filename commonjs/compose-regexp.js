@@ -77,8 +77,8 @@
 	// of regexps, strings, etc... it has the following structure
 	//
 	//   {
-	//     key: the parameter passed to the API for the first three kinds (see below), the metadata object for 'result'
-	//     kind : 'regexp' | 'string' | 'ref' | 'result'
+	//     key: the parameter passed to the API for the first two kinds (see below), the metadata object for 'result'
+	//     kind : 'regexp' | 'string' | 'result'
 	//     source: the corresponding source, optionally moddified if necessary (fixing numeric refs, wrapping disjunctions in sequences...)
 	//   }
 	//
@@ -165,7 +165,7 @@
 	// combining (some of) this into a single function may give space
 	// and perf gains, at the expense of maintainability
 
-	var uProblemDefaultMatcher = /\\u\d{4}|\\x\d{2}|\\k<(.*?)>|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv])|\[\^\]|\.|[\[]|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d?\})?)/g;
+	var uProblemDefaultMatcher = /\\u\d{4}|\\x\d{2}|\\k<(.*?)>|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\[\^\]|\.|[\[]|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d?\})?)/g;
 	var uProblemCharClassMatcher = /\\u\d{4}|\\x\d{2}|\\c[A-Za-z]|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|[\]]/g;
 
 	var groupNameMatcher = supportsU && new RegExp('^[_$\\p{ID_Start}][$\\p{ID_Continue}]*', 'u');
@@ -777,9 +777,28 @@
 		: _flags.apply(flagAdd, arguments)
 	}};
 
+
+	function csDiff(a, b) {return sequence(avoid(b), a)}
+	function csInter(a, b) {return sequence(avoid(csDiff(a, b)), a)}
+
+	var charSet = {
+		union: either,
+		difference: csDiff,
+		intersection: csInter
+	};
+
+	function bound() {
+		return either(
+			[notBehind.apply(null, arguments), lookAhead.apply(null, arguments)],
+			[lookBehind.apply(null, arguments), avoid.apply(null, arguments)]
+		)
+	}
+
 	exports.atomic = atomic;
 	exports.avoid = avoid;
+	exports.bound = bound;
 	exports.capture = capture;
+	exports.charSet = charSet;
 	exports.either = either;
 	exports.flags = flags;
 	exports.lookAhead = lookAhead;

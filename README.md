@@ -3,6 +3,43 @@
 - Build and compose *maintainable* regular exprssions in JavaScript.
 - ReDOS, begone!
 
+### Highlights
+
+#### Fixing ReDOS
+
+```JS
+import {atomic, sequence} from 'compose-regexp'
+// classic ReDOS-vulnerable RegExp:
+const vuln = /^(([a-z])+.)+[A-Z]([a-z])+$/
+
+// fixed with compose-regexp, this does not backtrack
+const fixed = fixed = sequence(/^/, atomic(/(([a-z])+.)+/), /[A-Z]([a-z])+$/)
+```
+
+#### Combining character sets
+
+```JS
+import {bound, charSet, flags, suffix} from 'compose-regexp'
+
+const LcGrekLetter = charSet.intersection(/\p{Lowercase}/u, /\p{Script=Greek}/u)
+LcGrekLetter.test("Γ") // false
+LcGrekLetter.test("γ") // true
+LcGrekLetter.test("x") // false
+
+const b = bound(/\p{Script=Greek}/u)
+
+const LcGrekWords = flags.add('g', b, suffix("+", LcGrekLetter), b)
+
+for (lc of `Θεωρείται ως ο σημαντικότερος θεμελιωτής ...`.matchAll(LcGrekWords)) {
+  console.log(lc) //'ως', 'ο', 'σημαντικότερος', 'θεμελιωτής'
+}
+```
+
+## TOC
+
+<!-- START toc -->
+<!-- END toc -->
+
 ## Why you may need this lib
 
 Regular exprssions don't do justice to regular grammars.
@@ -35,7 +72,7 @@ import {capture, either, ref, sequence, suffix} from "compose-regexp"
 
 const Str = sequence(
     capture(/['"]/),
-    suffix('*?', // a frugal Kleene star, isn't it cute?
+    suffix('*?', // a frugal Kleene star
         either (
             ["\\", /./s)], // using the `s` flag to match escaped line terminators
             /./            // no `s` flag here, bare line terminators are invalid
@@ -59,6 +96,7 @@ const AnchStr = /^(['"])(?:\\[^]|.)*?\1$/
 console.log(String.raw`""`.match(AnchStr), [`expected ""`])
 console.log(String.raw`"abc"`.match(AnchStr), [`expected "abc"`])
 console.log(String.raw`"a\"c"`.match(AnchStr), [`expected "a\\"c"`])
+console.log(String.raw`"abc`.match(AnchStr), [`expected null`])
 // It seems to work, let's feed it invalid input
 console.log(String.raw`"a"c"`.match(AnchStr), [`expected null, got "a"c"`])
 ```
@@ -75,6 +113,7 @@ const AnchAtomicStr = /^(?=((['"])(?:\\[^]|.)*?\2))\1$/
 console.log(String.raw`""`.match(AnchAtomicStr), [`expected ""`])
 console.log(String.raw`"abc"`.match(AnchAtomicStr), [`expected "abc"`])
 console.log(String.raw`"a\"c"`.match(AnchAtomicStr), [`expected "a\\"c"`])
+console.log(String.raw`"abc`.match(AnchStr), [`expected null`])
 // suspense...
 console.log(String.raw`"a"c"`.match(AnchAtomicStr), [`got null, it works!`])
 
@@ -83,6 +122,39 @@ console.log(String.raw`"a"c"`.match(AnchAtomicStr), [`got null, it works!`])
 And we got it done!
 
 ## API
+
+### in a nutshell:
+
+```JS
+// Core combinators
+either(...exprs) //  /a|b/
+sequence(...exprs) // /ab/
+suffix(quantifier, ...exprs) // /a+/, /(?:a|b){1,3}/
+maybe(...exprs) // shortcut for `suffix('?', ...)`
+flags.add(flags, ...exprs) // add flags
+
+
+// predicates
+avoid(...exprs)     // negative lookAhead: /(?!...)/
+lookAhead(...exprs) // positive lookahead: /(?=...)/
+lookBehind(...exprs) // positive behind: /(?<=...)/
+notBehind(...exprs) // negative behind: /(?<!...)/
+
+// captures and references
+capture(...exprs)
+namedCapture(label, ..exprs.)
+ref(nuberOrLabel)
+
+// other functions
+atomic(...exprs) // helper to prevent backtracking
+
+bound(...exprs) // like /\b/, but for arbitrary charSets rather than just \w
+
+charSet.union(...cs) // character that match any of the provided charsets
+charSet.difference(a, b) // characters that match charSet `a` and don't match charSet `b`
+charSet.intersection(a, b) // characters that match both charSet `a` and charSet `b`
+
+```
 
 ### General notes:
 
@@ -109,36 +181,6 @@ Therefore:
 
     - The other flags of regexps passed as parameters are ignored, and always reset to false on the result unless set by `flags()`. This is obviously suboptimal, and will be improved in time.
 - Back references (`\1`, etc...) are automatically upgraded suc that `sequence(/(\w)\1/, /(\d)\1/)` becomes `/(\w)\1(\d)\2/`. The `ref()` function lets one create refs programmatically:
-
-### in a nutshell:
-
-```JS
-// Core combinators
-either(...exprs) //  /a|b/
-sequence(...exprs) // /ab/
-suffix(quantifier, ...exprs) // /a+/, /(?:a|b){1,3}/
-maybe(...exprs) // shortcut for `suffix('?', ...)`
-
-
-// predicates
-avoid(...exprs)     // negative lookAhead: /(?!...)/
-lookAhead(...exprs) // positive lookahead: /(?=...)/
-lookBehind(...exprs) // positive behind: /(?<=...)/
-notBehind(...exprs) // negative behind: /(?<!...)/
-
-// captures and references 
-capture(...exprs)
-namedCapture(name, ..exprs.)
-ref(nuberOrLabel)
-
-// other functions
-charSet.union(...cs) // character that match any of the provided charsets
-charSet.diff(a, b) // characters that match charSet `a` and don't match charSet `b`
-charSet.inter(a, b) // characters that match both charSet `a` and charSet `b`
-
-atomic(...exprs) // helper to prevent backtracking
-flags.add(flags, ...exprs) // add flags
-```
 
 ### details
 
@@ -326,8 +368,8 @@ Returns a RegExp that will match `sequence(...exprs)`, but into which the engine
 ----
 
 #### charSet.union(...cs)
-#### charSet.diff(a, b)
-#### charSet.inter(a, b)
+#### charSet.difference(a, b)
+#### charSet.intersection(a, b)
 
 Set operations on charSets... well, operations on arbitrary RegExps, actually. They can be fed anything but are probably most useful when used with CharSets, CharClasses, and Unicode properties.
 
@@ -344,10 +386,10 @@ abcd.test(e) // false
 
 ```
 
-- `charSet.diff(a, b)`: returns a RegExp that matches the characters matched by `a` and don't match those of `b`
+- `charSet.difference(a, b)`: returns a RegExp that matches the characters matched by `a` and don't match those of `b`
 
 ```JS
-const ab = charSet.diff(/[a-d]/, /[cd]/)
+const ab = charSet.difference(/[a-d]/, /[cd]/)
 
 ab.test(a) // true
 ab.test(b) // true
@@ -355,10 +397,10 @@ ab.test(c) // false
 ab.test(d) // false
 ```
 
-- `charSet.inter(a, b)`: returns a RegExp that matches characters matched by both `a` and `b`.
+- `charSet.intersection(a, b)`: returns a RegExp that matches characters matched by both `a` and `b`.
 
 ```JS
-const bc = charSet.inter(/[a-c]/, /[b-d]/)
+const bc = charSet.intersection(/[a-c]/, /[b-d]/)
 
 bc.test(a) // false
 bc.test(b) // true
@@ -369,18 +411,18 @@ bc.test(d) // false
 This is especially useful when combined with Unicode properties:
 
 ```JS
-const LcCyrl = charSet.inter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
+const LcCyrl = charSet.intersection(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
 LcCyrl.test("б") // true
 LcCyrl.test("Б") // false
 LcCyrl.test("b") // false
 
-const UcGrek = = charSet.inter(/\p{Uppuercase}/u, /\p{Script=Greek}/u)
+const UcGrek = = charSet.intersection(/\p{Uppuercase}/u, /\p{Script=Greek}/u)
 UcGrek.test("Γ") // true
 UcGrek.test("γ") // false
 UcGrek.test("W") // false
 
 // another example
-const asciiNonLetter = charSet.diff(/[\0\x7f]/, /[A-Za-z]/)
+const asciiNonLetter = charSet.difference(/[\0\x7f]/, /[A-Za-z]/)
 asciiNonLetter.test(":") // true
 asciiNonLetter.test("a") // false
 

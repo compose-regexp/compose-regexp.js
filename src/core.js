@@ -95,7 +95,7 @@ function getSource(x) {
 // combining (some of) this into a single function may give space
 // and perf gains, at the expense of maintainability
 
-var uProblemDefaultMatcher = /\\u\d{4}|\\x\d{2}|\\k<(.*?)>|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv])|\[\^\]|\.|[\[]|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d?\})?)/g
+var uProblemDefaultMatcher = /\\u\d{4}|\\x\d{2}|\\k<(.*?)>|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\[\^\]|\.|[\[]|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d?\})?)/g
 var uProblemCharClassMatcher = /\\u\d{4}|\\x\d{2}|\\c[A-Za-z]|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|[\]]/g
 
 export var groupNameMatcher = supportsU && new RegExp('^[_$\\p{ID_Start}][$\\p{ID_Continue}]*', 'u')
