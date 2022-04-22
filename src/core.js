@@ -7,8 +7,8 @@ import {allFlags, canFoldM, hasOwn, identity, map, RegExpRef, store, supportsU, 
 // of regexps, strings, etc... it has the following structure
 //
 //   {
-//     key: the parameter passed to the API for the first three kinds (see below), the metadata object for 'result'
-//     kind : 'regexp' | 'string' | 'ref' | 'result'
+//     key: the parameter passed to the API for the first two kinds (see below), the metadata object for 'result'
+//     kind : 'regexp' | 'string' | 'result'
 //     source: the corresponding source, optionally moddified if necessary (fixing numeric refs, wrapping disjunctions in sequences...)
 //   }
 //
@@ -165,7 +165,7 @@ var countCaptures = mdMemo('captureCount', function countCaptures(x) {
 	return count
 })
 
-var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\(\?:\$ \^depth:(\d+),n:(\d+)\)/g
+var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\(\?:\$ \^d:(\d+),n:(\d+)\)/g
 
 var hasRefs = mdMemo('hasRefs', function hasRefs(x) {
 	var hasRefs = false, hasFinalRef = false, inCClass = false, result
@@ -307,7 +307,7 @@ function $$_fixRefs(initialOffset) {
 							return '\\' + String(fixedRefIndex)
 						} else if (depth != null) {
 							if (depth === '0') return '\\' + String(thunkIndex)
-							else return '(?:$ ^depth:' + (Number(depth) -1) + ',n:' + thunkIndex + ')'
+							else return '(?:$ ^d:' + (Number(depth) -1) + ',n:' + thunkIndex + ')'
 						}
 					}
 					if (match === '[') inCClass = true

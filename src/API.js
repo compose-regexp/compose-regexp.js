@@ -99,7 +99,7 @@ export function ref(n, depth) {
 	if (!checkRef(n)) throw new SyntaxError("Bad ref: " + n)
 	if ((depth != null) && (typeof depth !== 'number' || depth < 1 || (depth !== depth|0))) throw new RangeError("Bad depth: " + depth)
     if (typeof n === 'string') return new RegExp('\\k<' + n + '>')
-	var result = new RegExp('(?:$ ^depth:' + (depth || '0')+ ",n:" + n + ")")
+	var result = new RegExp('(?:$ ^d:' + (depth || '0')+ ",n:" + n + ")")
 	metadata.set(result, {
         direction: $direction.current,
         hasFinalRef: true,

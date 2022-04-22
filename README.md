@@ -257,17 +257,26 @@ Negative look behind
 /(abc)/
 ```
 
-#### ref(n: number) : Thunk<Regexp>
 #### ref(label: string) : RegExp
+#### ref(n: number) : RegExp
+#### ref(n: number, d: number) : RegExp
 
+When passed a number, returns a specially crafted RegExp that can't match anything as is but will be turned into a back reference when composed.
 See the [back references](#back-references) section below for a detailed description
 
 ```JS
-> ref(1)          // Object.assign(() => "\\1", {ref: true})
-() => "\\1"
-
-> ref("label")    // Object.assign(() => "\\k<label>", {ref: true})
+> ref("label")
 /\k<label>/
+
+> ref(1)
+/($ ^d:0,n:1)/
+
+> sequence(capture(/./), ref(1))
+/(.)\1/
+
+// a ref to a capture two levels up the call stack
+> sequence(capture(/\w/), either(capture(ref(1,2)), /./u))
+/(\w)(?:(\1)|.)/u
 ```
 
 #### atomic(...exprs) : RegExp
@@ -287,11 +296,19 @@ See the [back references](#back-references) section below for a detailed descrip
 
 ### Atomic matching
 
-Atomic groups prevent the RegExp engine from backtracking into them, aleviating the infamous ReDOS attack. JavaScript doesn't support them out of the box as of 2022, but they can be emulated using the `/(?=(your stuff here))\1/` pattern. We provide a convenient `atomic()` helper that wraps regexps in such a way, making them atomic at the boundary. Putting an `atomic()` call around an exprssion is not enough to prevent backtracking, you'll have to put them around every exprssion that could backtrack problematically.
+Atomic groups prevent the RegExp engine from backtracking into them, aleviating the infamous ReDOS attack. JavaScript doesn't support them out of the box as of 2022, but they can be emulated using the `/(?=(your stuff here))\1/` pattern. We provide a convenient `atomic()` helper that wraps regexps in such a way, making them atomic at the boundary. Putting an `atomic()` call around an exprssion is not enough to prevent backtracking inside of it, you'll have to put them around every exprssion that could backtrack problematically. (//TODO: give examples. Feel free to open a PR or an issue do discuss this).
 
-Also, the `atomic()` helper creates a capturing group, offsetting the indices of nested and further captures. It is better to rely on named captures for extracting values.
+Also, the `atomic()` helper creates a capturing group, offsetting the indices of nested and further captures. It is better to rely on named captures for extracting values from a match, as numbered captures go all over the place when composing.
 
 In look behind assertions (`lookBehind(...)` and `notBehind(...)` a.k.a. `/(?<=...)/` and `/(?<!...)/`) matching happens backwards. For atomic matching in lookBehind assertions, wrap the arguments inside a function, in that context, `atomic('x')` produces `/\1(?<=(x))/`.
+
+```JS
+// nope:
+lookBehind(atomic(/.*?/)) // throws
+
+lookBehind(()=>atomic(/.*?/)) // => /(?<=/\1(?<=(.*?))/)/
+
+```
 
 To better undestand the behavior of back-references in compound regexps, see the next section.
 
@@ -328,15 +345,71 @@ In look behind assertions, be they positive or negative, patterns are applied ba
 /(?<=\1(.))./.exec("abccd") //=> matches "d"
 ```
 
-Patterns with back reference intended for general, forward usage will be useless in look behind context, and `compose-regexp` will reject them. If you want to use back references in
+Patterns with back reference intended for general, forward usage will be useless in look behind context, and `compose-regexp` will reject them. If you want to use back references in patterns that are interpreted backwards, you must use a function:
+
+```JS
+// this will not work:
+const errorInTheMaking = sequence(capture(/./), ref(1))
+const bw = lookBehind(errorInTheMaking) // throws, thankfully
+
+// this works
+const bw = lookBehind(()=>[ref(1), capture(/./)])
+// => /(?<=\1(.))/
+```
+
+The `atomic()` helper is direction sensitive. When called in backward context, it produces a result that will be atomic when interpreted backwards.
+
+```JS
+atomic("a") // => /(?=(a))\1/
+
+// this will not work:
+lookBehind(atomic(a)) // throws
+
+// this will:
+lookBehind(()=>atomic(a)) // => /(?<=\1(?<=(a)))
+```
+
+For scenarios where you'd like to use a back reference in a nested context, you can use the second optional `depth` parameter to `ref(n, depth)`
+
+```JS
+sequence(capture(/./), either(capture("a", ref(1, 2), "b"), /./u)
+// => /(.)(?:(a\1b)|.)/u
+
+// without depth, not what you'd want:
+sequence(capture(/./), either(capture("a", ref(1), "b"), /./)
+// => /(.)(?:(a\2b)|.)/
+```
+
+The depth is `2`, for the levels in the call stack(one for `capture()`, one for `either()`).
 
 ### Limitations and missing pieces
 
 - `compose-regexp` will not be able to mix `i`-flagged and non-`i`-flagged without native support for the scenario. Case-insensitive matching involves case folding both the pattern and the source string, and `compose-regexp` can't access the latter.
 
-- there is no way to exprss `/(a)(b\1c)/` programmatically. We'd need to add an optional second `nested` argument to `ref(n)`, and completely revamp the core for that to happen. Hypothetic API: `sequence(()=>[capture('a'), capture('b', ref(1, -1), 'c')])`.
+- `compose-regexp` currently doesn't deal with character set composition, this is on my TODO list. In the mean time, you can get pretty far with these helpers which are functional, but don't give the most optimized results.
 
-- `compose-regexp` currently doesn't deal with character set composition, this is on my TODO list.
+You'll have to make sure that you're feeding them CharSets (`/[abc]/`), unicode property excapes (`/\p{Any}/`) or simple atoms (`/./` or `'a'`).
+
+```JS
+const charSetUnion = (...cs) => either(...cs)
+const charSetDiff = (a, b) => sequence(avoid(b), a)
+const charSetInter = (a, b) => sequence(avoid(charSetDiff(a, b)), a)
+
+charSetInter(/[a-c]/, /[b-d]/).test("a") // false
+charSetInter(/[a-c]/, /[b-d]/).test("b") // true
+charSetInter(/[a-c]/, /[b-d]/).test("c") // true
+charSetInter(/[a-c]/, /[b-d]/).test("d") // false
+```
+
+With this, you can match, say lower case cyrillic:
+
+```JS
+const LcCyrl = charSetInter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
+p(LcCyrl.test("Б"))
+p(LcCyrl.test("б"))
+```
+
+The full list of supported Unicode properties is [listed in the ECMAScript spec](https://tc39.es/ecma262/#sec-runtime-semantics-unicodematchproperty-p).
 
 ## License MIT
 

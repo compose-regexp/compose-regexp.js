@@ -233,7 +233,7 @@
 		return count
 	});
 
-	var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\(\?:\$ \^depth:(\d+),n:(\d+)\)/g;
+	var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\(\?:\$ \^d:(\d+),n:(\d+)\)/g;
 
 	var hasRefs = mdMemo('hasRefs', function hasRefs(x) {
 		var hasRefs = false, hasFinalRef = false, inCClass = false, result;
@@ -375,7 +375,7 @@
 								return '\\' + String(fixedRefIndex)
 							} else if (depth != null) {
 								if (depth === '0') return '\\' + String(thunkIndex)
-								else return '(?:$ ^depth:' + (Number(depth) -1) + ',n:' + thunkIndex + ')'
+								else return '(?:$ ^d:' + (Number(depth) -1) + ',n:' + thunkIndex + ')'
 							}
 						}
 						if (match === '[') inCClass = true;
@@ -700,7 +700,7 @@
 		if (!checkRef(n)) throw new SyntaxError("Bad ref: " + n)
 		if ((depth != null) && (typeof depth !== 'number' || depth < 1 || (depth !== depth|0))) throw new RangeError("Bad depth: " + depth)
 	    if (typeof n === 'string') return new RegExp('\\k<' + n + '>')
-		var result = new RegExp('(?:$ ^depth:' + (depth || '0')+ ",n:" + n + ")");
+		var result = new RegExp('(?:$ ^d:' + (depth || '0')+ ",n:" + n + ")");
 		metadata.set(result, {
 	        direction: $direction.current,
 	        hasFinalRef: true,

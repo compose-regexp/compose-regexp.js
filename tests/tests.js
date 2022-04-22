@@ -272,7 +272,7 @@ o.spec("flags", function () {
 
 		o(sequence(/(\.)/su, ref(1)))
 		.satisfies(r(/(\.)\1/u))
-		
+
 
 		o(sequence(/[.]/s))
 		.satisfies(r(/[.]/))
@@ -303,7 +303,7 @@ o.spec("flags", function () {
 	o("the m flag is absorbed, ^ and $ converted, but only once", function() {
 		o(sequence(/^/m))
 		.satisfies(r((/(?:^|(?<=[\n\r\u2028\u2029]))/)))
-		
+
 		o(sequence(/$/m))
 		.satisfies(r((/(?:$|(?=[\n\r\u2028\u2029]))/)))
 
@@ -312,7 +312,7 @@ o.spec("flags", function () {
 
 		o(sequence(flags.add('m', sequence(/^/m))))
 		.satisfies(r((/(?:^|(?<=[\n\r\u2028\u2029]))/)))
-		
+
 		o(sequence(flags.add('m', sequence(/$/m))))
 		.satisfies(r((/(?:$|(?=[\n\r\u2028\u2029]))/)))
 	})
@@ -468,29 +468,29 @@ o.spec("flags", function () {
 				o(()=>sequence(/a/u, [/./])).throws(SyntaxError)
 				o(()=>sequence([/a/u], /./)).throws(SyntaxError)
 				o(()=>sequence([/a/u], [/./])).throws(SyntaxError)
-	
+
 				o(()=>sequence(/a/u, /[^]/)).throws(SyntaxError)
 				o(()=>sequence(/a/u, [/[^]/])).throws(SyntaxError)
 				o(()=>sequence([/a/u], /[^]/)).throws(SyntaxError)
 				o(()=>sequence([/a/u], [/[^]/])).throws(SyntaxError)
-	
+
 				o(()=>sequence(/a/u, /\p/)).throws(SyntaxError)
 				o(()=>sequence(/a/u, [/\p/])).throws(SyntaxError)
 				o(()=>sequence([/a/u], /\p/)).throws(SyntaxError)
 				o(()=>sequence([/a/u], [/\p/])).throws(SyntaxError)
-	
+
 				o(()=>sequence(/a/u, /\k/)).throws(SyntaxError)
 				o(()=>sequence(/a/u, [/\k/])).throws(SyntaxError)
 				o(()=>sequence([/a/u], /\k/)).throws(SyntaxError)
 				o(()=>sequence([/a/u], [/\k/])).throws(SyntaxError)
-	
+
 				o(()=>sequence(/a/u, /\k<:>/)).throws(SyntaxError)
-	
+
 				o(()=>sequence(/a/u, /\-/)).throws(SyntaxError)
 				o(()=>sequence(/a/u, [/\-/])).throws(SyntaxError)
 				o(()=>sequence([/a/u], /\-/)).throws(SyntaxError)
 				o(()=>sequence([/a/u], [/\-/])).throws(SyntaxError)
-	
+
 				o(() => sequence(/a/u, /\x1/)).throws(SyntaxError)
 				o(() => sequence(/a/u, /[\x1]/)).throws(SyntaxError)
 				o(() => sequence(/a/u, /\u1/)).throws(SyntaxError)
@@ -502,7 +502,7 @@ o.spec("flags", function () {
 
 				o(()=>sequence(/a/u, /[\w-x]/)).throws(SyntaxError)
 				o(()=>sequence(/a/u, /[x-\w]/)).throws(SyntaxError)
-	
+
 				o(() => sequence(/a/u, /((?=())+)/)).throws(SyntaxError)
 			} finally {
 				RegExp = R
@@ -801,6 +801,18 @@ o.spec("refs", function () {
 		.satisfies(r(/(?:o)()\1()(?=e)\2(?!a)()()()\5/))
 
 	})
+	o("nested refs with a depth", function() {
+		// absurd, would throw with /u/
+		o(capture(ref(1)))
+		.satisfies(r(/(\1)/))
+
+		o(sequence(/./u, capture(/./u), capture(ref(1,1))))
+		.satisfies(r(/.(.)(\1)/u))
+
+		o(sequence(/./u, capture(/./u), capture(capture(ref(1,2)))))
+		.satisfies(r(/.(.)((\1))/u))
+
+	})
 	o("named captures and refs", function () {
 		o(sequence(namedCapture("b")))
 		.satisfies(r(/(?<b>)/))
@@ -837,12 +849,12 @@ o.spec("backwards and atoms", function() {
 	o.beforeEach(function() {
 		fw = atomic()
 		bw = backwards(()=>atomic())
-	
+
 		fwr = ref(1)
 		bwr = backwards(() => ref(1))
 
 		neutral = sequence('a', 'b')
-	
+
 	})
 
 	o("works", function() {
@@ -850,9 +862,9 @@ o.spec("backwards and atoms", function() {
 
 		o(bw).satisfies(r(/\1(?<=())/))
 
-		o(fwr).satisfies(r(/(?:$ ^depth:0,n:1)/))
+		o(fwr).satisfies(r(/(?:$ ^d:0,n:1)/))
 
-		o(bwr).satisfies(r(/(?:$ ^depth:0,n:1)/))
+		o(bwr).satisfies(r(/(?:$ ^d:0,n:1)/))
 
 	})
 
@@ -909,6 +921,44 @@ o.spec("backwards and atoms", function() {
 		o(sequence(notBehind(()=>atomic('a')), /a/))
 		.satisfies(r(/(?<!\1(?<=(a)))a/))
 
+		o(lookBehind(()=>ref(1), sequence("a",capture(/./),"b")))
+		.satisfies(r(/(?<=\1a(.)b)/))
+
+	})
+})
+
+o.spec("README Examples", function() {
+	o("CharSet operations", function() {
+		const charSetUnion = (...cs) => either(...cs)
+		const charSetDiff = (a, b) => sequence(avoid(b), a)
+		const charSetInter = (a, b) => sequence(avoid(charSetDiff(a, b)), a)
+
+		const abcd = charSetUnion(/[ab]/, /c/, 'd')
+
+		o(abcd.test('a')).equals(true)
+		o(abcd.test('b')).equals(true)
+		o(abcd.test('c')).equals(true)
+		o(abcd.test('d')).equals(true)
+
+
+		const ab = charSetDiff(/[abcd]/, /[cd]/)
+
+		o(ab.test('a')).equals(true)
+		o(ab.test('b')).equals(true)
+		o(ab.test('c')).equals(false)
+		o(ab.test('d')).equals(false)
+
+		const bc = charSetInter(/[a-c]/, /[b-d]/)
+
+		o(bc.test('a')).equals(false)
+		o(bc.test('b')).equals(true)
+		o(bc.test('c')).equals(true)
+		o(bc.test('d')).equals(false)
+
+		const LcCyrl = charSetInter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
+		o(LcCyrl.test("б")).equals(true)
+		o(LcCyrl.test("Б")).equals(false)
+
 	})
 })
 
@@ -929,7 +979,7 @@ o.spec("integration", function() {
 		o(str).satisfies(r(/(?=(('|")(?:\\[^]|.)*?\2))\1/))
 
 		o(str.test('""')).equals(true)
-	
+
 		result = capture(str).exec('""')
 		o(Array.isArray(result)).equals(true)
 		o(result).deepEquals(Object.assign([ '""', '""', '""', '"'], {index: 0, input:'""', groups: undefined}))
