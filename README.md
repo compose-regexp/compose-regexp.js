@@ -10,11 +10,13 @@
 ```JS
 import {atomic, sequence} from 'compose-regexp'
 // classic ReDOS-vulnerable RegExp:
-const vuln = /^(([a-z])+.)+[A-Z]([a-z])+$/
+const ReDOS = /^(([a-z])+.)+[A-Z]([a-z])+$/
 
 // fixed with compose-regexp, this does not backtrack
 const fixed = fixed = sequence(/^/, atomic(/(([a-z])+.)+/), /[A-Z]([a-z])+$/)
 ```
+
+You can test it on [flems.io](https://flems.io/#0=N4Igxg9gdgzhA2BTEAucD4EMAONEBMQAaEAMwEskZUBtUKTAW2TQDoALAF0fmPSk6IBqECAC+RekxYhWAK2olIAoZxHlG2CACdOAAmCZOERuTBE9eAI4BXIWERi9pbSb0BySJoh4AtNsQAc0QAD2wAAQAGVgA2Vkj3AB0oZIB6VL0AMXIQ8ihAvQAlRAARAHkAZT0Ad3JOdj0vLT8A4LDk5Rh9YvKqgF49VIA9AAoRmkxfAC8AXQBKAGpWRZoAQV8ALRnxydnFgBJU5LSMgDkIQT16oxrtHGw8gvrEGvYEF+LAgFEwmogbeD4KDufTVHQAaws0EQJz07EwMCuEEsjyQen++meemwmF0V3h+gARpgwODOHdSYjMFB8HpyHAsIJYXU6VA9NT2cZTGARnNGph4PBWB1oF1nDkCHoBtY7FAHCNhqkLEYTGYFWMJtN5ktFqk5hZUmtNttNXsFoc5sc5aLMRoXgMRlhCYh4BZSHy+gA+AzJPSNUXvVicO2OzDO+CWtn+2CB+AQQIjUi8yN+zqB4PML400PhyNiK2dTGILo9SpSvQhKXejOIEaJECFL69FB6esLEIWXle0sVIPFzgjEJzSOFq797IhSUDSteq4h+sUSf4Fttjt6LuexcEPtdQfDq3pMDsRCk-EvABCrmqeG00YZiDdSEYiPwEGLwP0+Hp2CwAE87+mdrYq42CINo8C-skABuEDkLSNC+q2ICYChqFoehGGoQAhPWRCIfWmGEURmA4cQ+HIcRlFoaReFRgRVEMSRuHkYxjGkckMysKQOhfCS7AjDAXrAIIJalJUAlzAA3GOXQTgQEliJGyR8HgSBgMGooiJEKAAKwAEziJIIAMMwIisGAMCKPwgjCGg4gzGIQA).
 
 #### Combining character sets
 
@@ -35,10 +37,49 @@ for (lc of `Θεωρείται ως ο σημαντικότερος θεμελι
 }
 ```
 
+You can test it live on [flems.io](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYFsZJAOgAsAXLKEAGhAGMB7NYmBvEAXwvW10QICsEqdBk2J4IWAA60ATsQAEwDMVpYI1CnIBGtAK5oAJhuqEM0gMoxiGsFAwBzOBrgwAjjqbUYTnWEgAPVjkwaRU5AHI6SVpnAFppGDsYPwkAAQAGfDCAHTQcoTh5ABlqAHF4gGtCy0ZpOQBeOWNTC2J8CGFpZ2piCHoACgB6LKyJYELaAHcYaWoMZ1YBnQ0hkeAzamkICWI6spgYcoWdAEoc4r3K6un8RgK+rJBAZOAH47kBgaCMKGcz0oqq4g1G7wYj3ECAZuAXm8PsRpO5fhcAUDbqCHn4oe9Pt8YDlcWh8vJNPUtLoDINhqN1pttrt4gcjqdcvj6AU5OcKgB1GT6Yk2exwfAYfT6PphOxhDTITTeXwQPxggDUDw07IOSOmxw0mgAuoycmAZHI+lBqHJaGA5AADQAZwIBW4EAk8CAQeBbYB64EAI8CARuBAJ3AcntgCHgOSAfuA5IBh4EA7cCAHuAPYBe4DdXsAXcCAGeA3bbHYGA4AO4FtEdtgG7gL32t2AOuAA-gy5b8FglMYAIJQKB9VXlLnSfTHV7AHJyRos2iwfBQWh2Y3UV7vML+iXhQNTsLhqOxhPJ1Pp2dZnP5wsl7JoVg5SggZywbq9NAIHhpRAADjSbA4IEwODw+GocAENHojGYPDY2tYQA).
+
 ## TOC
 
 <!-- START toc -->
-<!-- END toc -->
+- [compose-regexp.js](#compose-regexpjs)
+        - [Highlights](#highlights)
+            - [Fixing ReDOS](#fixing-redos)
+            - [Combining character sets](#combining-character-sets)
+    - [TOC](#toc)
+    - [Why you may need this lib](#why-you-may-need-this-lib)
+    - [Usage](#usage)
+        - [Installation](#installation)
+        - [Example](#example)
+    - [API](#api)
+        - [In a nutshell](#in-a-nutshell)
+        - [General notes](#general-notes)
+        - [Details](#details)
+            - [either(...exprs) : RegExp](#eitherexprs--regexp)
+            - [sequence(...exprs) : RegExp](#sequenceexprs--regexp)
+            - [suffix(quantifier, ...exprs) : RegExp](#suffixquantifier-exprs--regexp)
+            - [suffix(quantifier)(...exprs) : RegExp](#suffixquantifierexprs--regexp)
+            - [maybe(...exprs) : RegExp](#maybeexprs--regexp)
+            - [flags(opts, ...exprs) : RegExp](#flagsopts-exprs--regexp)
+            - [flags(opts)(...exprs) : RegExp](#flagsoptsexprs--regexp)
+            - [capture(...exprs) : RegExp](#captureexprs--regexp)
+            - [namedCapture(...exprs) : RegExp](#namedcaptureexprs--regexp)
+            - [ref(label: string) : RegExp](#reflabel-string--regexp)
+            - [ref(n: number) : RegExp](#refn-number--regexp)
+            - [ref(n: number, d: number) : RegExp](#refn-number-d-number--regexp)
+            - [lookAhead(...exprs) : RegExp](#lookaheadexprs--regexp)
+            - [notAhead(...exprs) : RegExp](#notaheadexprs--regexp)
+            - [lookBehind(...exprs) : RegExp](#lookbehindexprs--regexp)
+            - [notBehind(...exprs) : RegExp](#notbehindexprs--regexp)
+            - [atomic(...exprs) : RegExp](#atomicexprs--regexp)
+            - [charSet.union(...cs) : RegExp](#charsetunioncs--regexp)
+            - [charSet.difference(a, b) : RegExp](#charsetdifferencea-b--regexp)
+            - [charSet.intersection(a, b) : RegExp](#charsetintersectiona-b--regexp)
+    - [Atomic matching](#atomic-matching)
+    - [Let's talk about flags](#lets-talk-about-flags)
+    - [Back References](#back-references)
+    - [Limitations and missing pieces](#limitations-and-missing-pieces)
+    - [License MIT](#license-mit)<!-- END toc -->
 
 ## Why you may need this lib
 
@@ -58,6 +99,8 @@ It doesn't make regular grammars more powerful, they are still [fundamentally li
 
 ## Usage
 
+### Installation
+
 ```Shell
 $ npm install --save compose-regexp
 ```
@@ -74,7 +117,7 @@ const Str = sequence(
     capture(/['"]/),
     suffix('*?', // a frugal Kleene star
         either (
-            ["\\", /./s)], // using the `s` flag to match escaped line terminators
+            ["\\", /./s], // using the `s` flag to match escaped line terminators
             /./            // no `s` flag here, bare line terminators are invalid
         )
     ),
@@ -123,7 +166,7 @@ And we got it done!
 
 ## API
 
-### in a nutshell:
+### In a nutshell
 
 ```JS
 // Core combinators
@@ -160,7 +203,9 @@ charSet.intersection(a, b) // characters that match both charSet `a` and charSet
 // this lib.
 ```
 
-### General notes:
+Here's a [flems.io sandbox](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYFsZJAOgAsAXLKEAGhAGMB7NYmBvEAXwvW10QICsEqdBk2J4IWAA60ATsQAEwADpo5cjMVpYI1CnIBGtAK5oAJruoYJxQ9JjnCGaXBjFdMCMUIxpusFAwA5nAUyqpQtLQA1gCCXhhmcuFRAEIwhBCmulgYAJ56dnKYOCYAwpbWtiEqhbTEsTDxumi1qemZcrZgus4AjoZM1AVwhmCQAB7KrHJgMlhyAOR0krTOALS2ATBjEgACAAz4AGz4e-PKykJw8gDKxNJyALxyvf1ogwAUoapyFlY2MO8APTIM4gAC6gIAlFVvs8RuN3vMAFQAfnmukBgLU02khgCGCgcgA0rAmDBnsRHF9Yap3J5vHJPtUaTTkIoQIpOZzKHJAfhAXAwRisYY4BkAnJ6XIAAZwaXTfwSjRybLEaiEOTwX4wEyJDLkxjSLSYDROaks758rEW2GYmoyuUKwJyLyVfSOclQfWS7zG9QyOBqWxyDIANwJEBM5thkPN0PNnXeAEZY2hU8o7TN7owruK5AB3GDzKCE+K6jBvQgByW0FUYSLk4bBws-ejDHBqEtyWhgSVeENoCSGYgXNvyCvqmQ6x6M-BzsaQx4APmeMD6AwBgIAeoDdHP8GMMQASKGjtBXOTRSu3e5PCdV2wmd439NvNu0WD4cIBT4gVarAsPCrYc1A0LRqDkf92VfS4PxgL9aB-G9xXwaQMHzaV2XZaV8FVdV3ivdUX10ZBpS2CQYGoRhdSwkBpTBVNYM-b9nzuFC0Iw9kMD0ahsNw9R8MIwhiLkUjyMo6i5C4njsIYs84DghCkLYtAAlQ9DMJADAuRoPi8MIAjrzuaFRLI7YJOnLiuW5Xi6Lkt9z0UljkNU9TOK0nicP0wyiOMkizIoqjpzQQwS3o1M7QASXkZwYCwQNlXzGRIl0WBiHmQMwBgacPAHcMvV1DIhxHByFOYxDWOkdiNKs3S6P4tUDKEkSxPMoLdRCktdACWopK09lbPC85Sqcir2X-QDPFAzRtEg1ZoPk+QhOiMDtBvGd7ynJ9-XAyrIRg99yuUqrXI4zS9IEprKxWmbqBagKLJojk7MYw74OclS1LO6TBoawTrtWu6-NM8T2r67jBvspj3oqlyvpq-qbIuxqfMIG7wPu0HJKs6y6qGkajsq6r3IhrzLtRzG2skzqoHxu1hjgCjz3gud5NG47ic07S8b+q71XRtbgdInr5Bp3RcqS6RIjgABCcLKBAZxYCoiA2zwQ5ED2NgOBAIpuAIag4AEGh6EYZgeDYMFWCAA) with the full API pre-loaded, and the string example above.
+
+### General notes
 
 - The `...exprs` parameters of these functions can be either RegExps, strings, or arrays of `expr`s. Arrays of exprs are treated as nested sequences.
 
@@ -186,11 +231,11 @@ Therefore:
     - The other flags of regexps passed as parameters are ignored, and always reset to false on the result unless set by `flags()`. This is obviously suboptimal, and will be improved in time.
 - Back references (`\1`, etc...) are automatically upgraded suc that `sequence(/(\w)\1/, /(\d)\1/)` becomes `/(\w)\1(\d)\2/`. The `ref()` function lets one create refs programmatically:
 
-### details
+### Details
 
 ----
 
-#### either(...exprs)
+#### either(...exprs) : RegExp
 
 ```JS
 > either(/a/, /b/, /c/)
@@ -206,7 +251,7 @@ Therefore:
 
 ----
 
-#### sequence(...exprs)
+#### sequence(...exprs) : RegExp
 
 ```JS
 > sequence(/a/, /b/, /c/)
@@ -255,7 +300,7 @@ non-string quantifiers are converted to String and wrapped in braces such that
 
 ----
 
-#### maybe(...exprs)
+#### maybe(...exprs) : RegExp
 
 shorcut for the `?` quantifier
 
@@ -266,7 +311,8 @@ shorcut for the `?` quantifier
 
 ----
 
-#### flags(opts, ...exprs), flags(opts)(...exprs)
+#### flags(opts, ...exprs) : RegExp
+#### flags(opts)(...exprs) : RegExp
 
 ```JavaScript
 > flags('gm', /a/)
@@ -323,7 +369,7 @@ See the [back references](#back-references) section below for a detailed descrip
 
 ----
 
-#### lookAhead(...exprs)
+#### lookAhead(...exprs) : RegExp
 
 Positive look ahead.
 
@@ -334,7 +380,7 @@ Positive look ahead.
 
 ----
 
-#### notAhead(...exprs)
+#### notAhead(...exprs) : RegExp
 
 Negative look ahead.
 
@@ -345,7 +391,7 @@ Negative look ahead.
 
 ----
 
-#### lookBehind(...exprs)
+#### lookBehind(...exprs) : RegExp
 
 Positive look behind.
 
@@ -356,7 +402,7 @@ Positive look behind.
 
 ----
 
-#### notBehind(...exprs)
+#### notBehind(...exprs) : RegExp
 
 Negative look behind.
 
@@ -382,13 +428,13 @@ Returns a RegExp that will match `sequence(...exprs)`, but into which the engine
 /(?<=\1(?<=(\w+?)))/
 ```
 
-`atomic()` adds an unnamed capturing group. There's no way around it as of until JS adds support for atomic groups. You'd be better off using named capturing groups if you want to extract sub-matches, they are easier the handle than match indices which go all over the place anyway when you compose RegExps.
+`atomic()` adds an unnamed capturing group. There's no way around it as of until JS adds support for atomic groups. You'd be better off using named capturing groups if you want to extract sub-matches, they are easier the handle than match indices which go all over the place anyway when you compose RegExps. See the [atomic matching](#atomic-matching) section for more detals.
 
 ----
 
-#### charSet.union(...cs)
-#### charSet.difference(a, b)
-#### charSet.intersection(a, b)
+#### charSet.union(...cs) : RegExp
+#### charSet.difference(a, b) : RegExp
+#### charSet.intersection(a, b) : RegExp
 
 Set operations on charSets... well, operations on arbitrary RegExps, actually. They can be fed anything but are probably most useful when used with CharSets, CharClasses, and Unicode properties.
 
@@ -451,7 +497,7 @@ The full list of supported Unicode properties is [listed in the ECMAScript spec]
 
 ----
 
-### Atomic matching
+## Atomic matching
 
 Atomic groups prevent the RegExp engine from backtracking into them, aleviating the infamous ReDOS attack. JavaScript doesn't support them out of the box as of 2022, but they can be emulated using the `/(?=(your stuff here))\1/` pattern. We provide a convenient `atomic()` helper that wraps regexps in such a way, making them atomic at the boundary. Putting an `atomic()` call around an exprssion is not enough to prevent backtracking inside of it, you'll have to put them around every exprssion that could backtrack problematically. (//TODO: give examples. Feel free to open a PR or an issue do discuss this).
 
@@ -469,7 +515,7 @@ lookBehind(()=>atomic(/.*?/)) // => /(?<=/\1(?<=(.*?))/)/
 
 To better undestand the behavior of back-references in compound regexps, see the next section.
 
-### Flags of input and output RegExps
+## Let's talk about flags
 
 The `g`, `d` and `y` flags of input RegExps will be ignored by the combinators. The resulting RegExp will not have them (unless added manually with `flags.add()`).
 
@@ -479,7 +525,7 @@ RegExps with the `m` and the `s` flags are converted to flagless regexps that ma
 
 RegExps with the `i` flag can't be mixed with `i`-less RegExps, and vice-versa. You need an "all-`i`" or an "all-non-`i`" cast for a given composition (strings are fine in both cases, they are flag-agnostic).
 
-### Back References
+## Back References
 
 Regular exprssions let one reference the value of a previous group by either numbered or labeled back-references. Labeled back-references refer to named groups, whereas the index of a numbered back references can map to either a named or an unnamed group.
 
@@ -539,7 +585,7 @@ sequence(capture(/./), either(capture("a", ref(1), "b"), /./)
 
 The depth is `2`, for the levels in the call stack(one for `capture()`, one for `either()`).
 
-### Limitations and missing pieces
+## Limitations and missing pieces
 
 - `compose-regexp` will not be able to mix `i`-flagged and non-`i`-flagged without native support for the scenario. Case-insensitive matching involves case folding both the pattern and the source string, and `compose-regexp` can't access the latter.
 
