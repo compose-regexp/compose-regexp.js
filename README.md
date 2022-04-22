@@ -308,6 +308,8 @@ See the [back references](#back-references) section below for a detailed descrip
 
 #### atomic(...exprs) : RegExp
 
+Return a RegExp that will match `sequence(...exprs)`, but into which the engine won't backtrack once it has succeeded.
+
 ```JS
 > atomic(/\w+?/)
 /(?=(\w+?))\1/
