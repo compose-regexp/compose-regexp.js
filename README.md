@@ -13,7 +13,7 @@ import {atomic, sequence} from 'compose-regexp'
 const ReDOS = /^(([a-z])+.)+[A-Z]([a-z])+$/
 
 // fixed with compose-regexp, this does not backtrack
-const fixed = fixed = sequence(/^/, atomic(/(([a-z])+.)+/), /[A-Z]([a-z])+$/)
+const fixed = sequence(/^/, atomic(/(([a-z])+.)+/), /[A-Z]([a-z])+$/)
 ```
 
 You can test it on [flems.io](https://flems.io/#0=N4Igxg9gdgzhA2BTEAucD4EMAONEBMQAaEAMwEskZUBtUKTAW2TQDoALAF0fmPSk6IBqECAC+RekxYhWAK2olIAoZxHlG2CACdOAAmCZOERuTBE9eAI4BXIWERi9pbSb0BySJoh4AtNsQAc0QAD2wAAQAGVgA2Vkj3AB0oZIB6VL0AMXIQ8ihAvQAlRAARAHkAZT0Ad3JOdj0vLT8A4LDk5Rh9YvKqgF49VIA9AAoRmkxfAC8AXQBKAGpWRZoAQV8ALRnxydnFgBJU5LSMgDkIQT16oxrtHGw8gvrEGvYEF+LAgFEwmogbeD4KDufTVHQAaws0EQJz07EwMCuEEsjyQen++meemwmF0V3h+gARpgwODOHdSYjMFB8HpyHAsIJYXU6VA9NT2cZTGARnNGph4PBWB1oF1nDkCHoBtY7FAHCNhqkLEYTGYFWMJtN5ktFqk5hZUmtNttNXsFoc5sc5aLMRoXgMRlhCYh4BZSHy+gA+AzJPSNUXvVicO2OzDO+CWtn+2CB+AQQIjUi8yN+zqB4PML400PhyNiK2dTGILo9SpSvQhKXejOIEaJECFL69FB6esLEIWXle0sVIPFzgjEJzSOFq797IhSUDSteq4h+sUSf4Fttjt6LuexcEPtdQfDq3pMDsRCk-EvABCrmqeG00YZiDdSEYiPwEGLwP0+Hp2CwAE87+mdrYq42CINo8C-skABuEDkLSNC+q2ICYChqFoehGGoQAhPWRCIfWmGEURmA4cQ+HIcRlFoaReFRgRVEMSRuHkYxjGkckMysKQOhfCS7AjDAXrAIIJalJUAlzAA3GOXQTgQEliJGyR8HgSBgMGooiJEKAAKwAEziJIIAMMwIisGAMCKPwgjCGg4gzGIQA).
