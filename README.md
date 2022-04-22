@@ -365,12 +365,12 @@ bc.test(d) // false
 This is especially useful when combined with Unicode properties:
 
 ```JS
-const LcCyrl = charSetInter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
+const LcCyrl = charSet.inter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
 LcCyrl.test("б") // true
 LcCyrl.test("Б") // false
 LcCyrl.test("b") // false
 
-const UcGrek = = charSetInter(/\p{Uppuercase}/u, /\p{Script=Greek}/u)
+const UcGrek = = charSet.inter(/\p{Uppuercase}/u, /\p{Script=Greek}/u)
 UcGrek.test("Γ") // true
 UcGrek.test("γ") // false
 UcGrek.test("W") // false
