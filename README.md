@@ -92,15 +92,15 @@ And we got it done!
 - Special characters in strings are escaped, so that `'.*'` is equivalent to `/\.\*/`.
 Therefore:
 
-```JS
-> sequence('.', '*').source === '\\.\\*'
-```
+    ```JS
+    > sequence('.', '*').source === '\\.\\*'
+    ```
 
-whereas:
+    whereas:
 
-```JS
-> sequence(/./', /a/).source === '.a'
-```
+    ```JS
+    > sequence(/./', /a/).source === '.a'
+    ```
 
 - `compose-regexp` understand RegExp syntax, and will add non-capturing groups automatically where relevant. e.g. `suffix('*', '.', /\w+/)` will turn into `/(?:\.\w+)*/`
 
