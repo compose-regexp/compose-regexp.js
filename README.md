@@ -333,7 +333,8 @@ Set operations on charSets... well, operations on arbitrary RegExps, actually. T
 - `charSet.union(...cs)`: returns a RegExp that matches any of the arguments
 
 ```JS
-const abcd = cs.union(/[ab]/, /c/, /d/)
+const abcd = charSet.union(/[ab]/, /c/, /d/)
+
 abcd.test(a) // true
 abcd.test(b) // true
 abcd.test(c) // true
@@ -345,7 +346,8 @@ abcd.test(e) // false
 - `charSet.diff(a, b)`: returns a RegExp that matches the characters matched by `a` and don't match those of `b`
 
 ```JS
-const ab = cs.diff(/[a-d]/, /[cd]/)
+const ab = charSet.diff(/[a-d]/, /[cd]/)
+
 ab.test(a) // true
 ab.test(b) // true
 ab.test(c) // false
@@ -353,9 +355,10 @@ ab.test(d) // false
 ```
 
 - `charSet.inter(a, b)`: returns a RegExp that matches characters matched by both `a` and `b`.
-const ab = cs.inter(/[a-c]/, /[b-d]/)
 
 ```JS
+const ab = charSet.inter(/[a-c]/, /[b-d]/)
+
 bc.test(a) // false
 bc.test(b) // true
 bc.test(c) // true
@@ -376,7 +379,7 @@ UcGrek.test("γ") // false
 UcGrek.test("W") // false
 
 // another example
-const asciiNonLetter = cs.diff(/[\0\x7f]/, /[A-Za-z]/)
+const asciiNonLetter = charSet.diff(/[\0\x7f]/, /[A-Za-z]/)
 asciiNonLetter.test(":") // true
 asciiNonLetter.test("a") // false
 
