@@ -92,7 +92,6 @@ And we got it done!
 - Special characters in strings are escaped, so that `'.*'` is equivalent to `/\.\*/`.
 Therefore:
 
-- `compose-regexp` understand RegExp syntax, and will add non-capturing groups automatically where relevant. e.g. `suffix('*', '.', /\w+/)` will turn into `/(?:\.\w+)*/`
 ```JS
 > sequence('.', '*').source === '\\.\\*'
 ```
@@ -102,6 +101,8 @@ whereas:
 ```JS
 > sequence(/./', /a/).source === '.a'
 ```
+
+- `compose-regexp` understand RegExp syntax, and will add non-capturing groups automatically where relevant. e.g. `suffix('*', '.', /\w+/)` will turn into `/(?:\.\w+)*/`
 
 - When composing RegExps with mixed flags:
 
