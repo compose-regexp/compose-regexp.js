@@ -1,14 +1,16 @@
 # compose-regexp.js
 
-> Build and compose *maintainable* regular exprssions in JavaScript. Avoid ReDOS!
+> Build and compose *maintainable* regular exprssions in JavaScript.
+
+> ReDOS, begone!
 
 ## Why you may need this lib
 
 Regular exprssions don't do justice to regular grammars.
 
-Complex RegExps hard to read, debug and modify. For code reuse, programers often resort to source string concatenation which is error prone and even less readable than RegExp literals.
+Complex RegExps hard to read, debug and modify. For code reuse, we often resort to source string concatenation which is error prone and even less readable than RegExp literals.
 
-Also, the matching engines are, by spec, required to backtrack on match failures. This can enable surprising behavior, and even the ReDOS attack where exponential backtracking triggers a very heavy computation that can freeze your programs for hours or years.
+Also, the matching engines are, by spec, required to backtrack on match failures. This can enable surprising behavior, and even the ReDOS attack where maliciously crafted input triggers exponential backtracking, a heavy computation that can freeze programs for hours if not for years.
 
 **`compose-regexp` to the rescue!**
 
@@ -16,7 +18,7 @@ Also, the matching engines are, by spec, required to backtrack on match failures
 
 It doesn't make regular grammars more powerful, they are still [fundamentally limited](https://en.wikipedia.org/w/index.php?title=Chomsky_hierarchy&oldid=762040114#The_hierarchy), but since they are ubiquitous, we may as well have better tooling to put them to use...
 
-`compose-regexp` is reasonably small (~3.6 KiB after compression), and doesn't have dependencies. You can also use as a part of your app, or, for client-side apps, in a server-side script that generates the RegExps that you ship to the browsers.
+`compose-regexp` is reasonably small (~3.6 KiB after compression), and doesn't have dependencies. You can use it as a plain dependency, or, for client-side apps, in a server-side script that generates the RegExps that you ship to the browsers.
 
 ## Usage
 
@@ -27,73 +29,59 @@ $ npm install --save compose-regexp
 ### Example
 
 ```JS
-import {
-    sequence, either, capture,
-    ref, suffix, flags, avoid
-} from "compose-regexp";
+import {capture, either, ref, sequence, suffix} from "compose-regexp"
 
-// the example that made me write this, in order to ~lex JS.
-// It matches braces in source code, but skips comments and strings.
+// Let's match a string, here's a naive RegExp that recognizes strings
+// with single or double quotes.
 
-const string = either(
-  sequence(
-    '"',
-    suffix('*?', // a non-greedy zero-or-more repetition
-      either(
-        /\\[\s\S]/,
-        /./
-      )
+const Str = sequence(
+    capture(/['"]/),
+    suffix('*?', // a frugal Kleene star, isn't it cute?
+        either (
+            ["\\", /./s)], // using the `s` flag to match escaped line returns
+            /./            // no `s` flag here, bare line returns are invalid
+        )
     ),
-    '"'
-  ),
-  sequence(
-    "'",
-    suffix('*?',
-      either(
-        /\\[\s\S]/,
-        /./
-      )
-    ),
-    "'"
-  ),
-  sequence(
-    "`",
-    suffix('*?',
-      either(
-        /\\[\s\S]/,
-        /[\s\S]/
-      )
-    ),
-    either("`", "${")
-  )
+    ref(1)
 )
-
-const multiLineComment = sequence(
-  '/*',
-  suffix('*?',
-    /[\s\S]/
-  ),
-  '*/'
-)
-const singleLineComment = sequence('//', /[^\n]*\n/)
-
-const comment = either(multiLineComment, singleLineComment)
-
-const matcher = flags('gm',
-    either(
-        comment,
-        string,
-        capture(either(/[{}]/, '}}'))
-    )
-);
-
-// matcher:
-
-/\/\*[\s\S]*?\*\/|\/\/[^\n]*\n|"(?:\\[\s\S]|.)*?"|'(?:\\[\s\S]|.)*?'|`(?:\\[\s\S]|[\s\S])*?`|([{}]|\}\})/gm
-
-// The most astute among you may have noticed that regexes in the subject string
-// would still trip that parser. Not perfect, but still useful.
+// equivalent to
+const Str = /(['"])(?:\\[^]|.)*?\1/
 ```
+
+Let's test it. For the docs' sake, `console.log()` will be out test harness.
+
+```JS
+// for testing we'll add anchors to make sure we consume all of the input
+const anchored = (...x) => sequence(/^/, ...x, /$/)
+const AnchStr = anchored(Str)
+// a.k.a.
+const AnchStr = /^(['"])(?:\\[^]|.)*?\1$/
+
+console.log(String.raw`""`.match(AnchStr), [`expected ""`])
+console.log(String.raw`"abc"`.match(AnchStr), [`expected "abc"`])
+console.log(String.raw`"a\"c"`.match(AnchStr), [`expected "a\\"c"`])
+// It seems to work, let's feed it invalid input
+console.log(String.raw`"a"c"`.match(AnchStr), [`expected null, got "a"c"`])
+```
+
+Backtracking bites us here. We can remedy the issue by using `atomic` helper
+
+```JS
+import {atomic} from 'compose-regexp'
+
+const AnchAtomicStr = anchored(atomic(Str))
+// that would be
+const AnchAtomicStr = /^(?=((['"])(?:\\[^]|.)*?\2))\1$/
+
+console.log(String.raw`""`.match(AnchAtomicStr), [`expected ""`])
+console.log(String.raw`"abc"`.match(AnchAtomicStr), [`expected "abc"`])
+console.log(String.raw`"a\"c"`.match(AnchAtomicStr), [`expected "a\\"c"`])
+// suspense...
+console.log(String.raw`"a"c"`.match(AnchAtomicStr), [`got null, it works!`])
+
+```
+
+And we got it done!
 
 ## API
 
@@ -121,20 +109,6 @@ whereas:
 
     - The other flags of regexps passed as parameters are ignored, and always reset to false on the result unless set by `flags()`. This is obviously suboptimal, and will be improved in time.
 - Back references (`\1`, etc...) are automatically upgraded suc that `sequence(/(\w)\1/, /(\d)\1/)` becomes `/(\w)\1(\d)\2/`. The `ref()` function lets one create refs programmatically:
-
-```js
-const possessive = x => sequence(capture(lookFor(x)), ref(1))
-
-const string = sequence(
-  capture(either("'", '"')),
-  possessive(suffix("*", either(
-    ["\\", /./],
-    [avoid(ref(1)), /./]
-  ))),
-  ref(1)
-)
-)
-```
 
 ### in a nutshell:
 
@@ -302,11 +276,14 @@ See the [back references](#back-references) section below for a detailed descrip
 > atomic(/\w+?/)
 /(?=(\w+?))\1/
 
->lookBehind(()=>atomic(/\w+?/))
+> lookBehind(atomic(/\w+?/))
+// Error, but...
+
+> lookBehind(()=>atomic(/\w+?/))
 /(?<=\1(?<=(\w+?)))/
 ```
 
-Atomic adds an unnamed capturing group. There's no way around it as of until JS adds support for atomic groups. You'd be better off using named capturing groups if you want to extract sub-matches, they are easier the handle than match indices.
+`atomic()` adds an unnamed capturing group. There's no way around it as of until JS adds support for atomic groups. You'd be better off using named capturing groups if you want to extract sub-matches, they are easier the handle than match indices which go all over the place anyway when you compose RegExps.
 
 ### Atomic matching
 
@@ -322,15 +299,36 @@ To better undestand the behavior of back-references in compound regexps, see the
 
 The `g`, `d` and `y` flags of input RegExps will be ignored by the combinators. The resulting RegExp will not have them (unless added manually with `flags.add()`).
 
-The `u` flag is contagious when possible. E.G. `sequence(/./u, /a/)` returns `/.a/u`. However the meaning of `sequence(/\p{Any}/u, /./)` is ambiguous. We don't know if you want `/\p{Any}./u`, or `/\p{Any}(?![\10000-\10ffff])./u`, avoiding matches in the Astral planes, like `/./` would do. In scenarios like this one, and in scenarios where a non-`u` RegExp whose source is not allowed in `u` mode is mixed with one that has a `u` flag, an error is thrown.
+The `u` flag is contagious when possible. E.G. `sequence(/./u, /a/)` returns `/.a/u`. However the meaning of `sequence(/\p{Any}/u, /./)` is ambiguous. We don't know if you want `/\p{Any}./u`, or `/\p{Any}(?![\10000-\10ffff])./u`, avoiding matches in the Astral planes, like `/./` would do. In scenarios like this one, and in cases where a non-`u` RegExp whose source is not allowed in `u` mode is mixed with one that has a `u` flag, an error is thrown.
 
-RegExps with the `m` and the `s` flags are converted to flagless regexps that match the same input. So for example `/./s` becomes `/[^]/`. The pattern is a bit more involved for `/^/` and `/$/` for the `m` flag. If your RegExp engine doesn't support look behind assertions, the `m` flag is preserved and is handled like the `i` flag (see below).
+RegExps with the `m` and the `s` flags are converted to flagless regexps that match the same input. So for example `/./s` becomes `/[^]/`. The pattern is a bit more involved for `/^/` and `/$/` with the `m` flag. If your RegExp engine doesn't support look behind assertions, the `m` flag is preserved and is handled like the `i` flag (see below).
 
 RegExps with the `i` flag can't be mixed with `i`-less RegExps, and vice-versa. You need an "all-`i`" or an "all-non-`i`" cast for a given composition (strings are fine in both cases, they are flag-agnostic).
 
 ### Back References
 
-Regular exprssions let one reference the value of a previous group by either numbered or labeled back-references. Labeled back-references
+Regular exprssions let one reference the value of a previous group by either numbered or labeled back-references. Labeled back-references refer to named groups, whereas the index of a numbered back references can map to either a named or an unnamed group.
+
+```JS
+/(.)\1/.test("aa") // true
+/(.)\1/.test("ab") // false
+/(?<x>.)\1/.test("aa") // true
+/(?<x>.)\k<x>/.test("aa") // true
+```
+
+`compose-regexp` takes back references into account when composing RegExps, and will update the indices of numbered refs.
+
+```JS
+sequence(/(.)\1/, /(.)\1/) // => /(.)\1(.)\2/
+```
+
+In look behind assertions, be they positive or negative, patterns are applied backward (i.e. right-to-left) to the input string. In that scenario, back references must appear before the capture they reference:
+
+```JS
+/(?<=\1(.))./.exec("abccd") //=> matches "d"
+```
+
+Patterns with back reference intended for general, forward usage will be useless in look behind context, and `compose-regexp` will reject them. If you want to use back references in
 
 ### Limitations and missing pieces
 
