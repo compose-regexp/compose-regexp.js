@@ -9,6 +9,7 @@
 
 ```JS
 import {atomic, sequence} from 'compose-regexp'
+
 // classic ReDOS-vulnerable RegExp:
 const ReDOS = /^(([a-z])+.)+[A-Z]([a-z])+$/
 
@@ -28,6 +29,7 @@ LcGrekLetter.test("Γ") // false
 LcGrekLetter.test("γ") // true
 LcGrekLetter.test("x") // false
 
+// like /\b/, but for Greek rather than /\w/
 const b = bound(/\p{Script=Greek}/u)
 
 const LcGrekWords = flags.add('g', b, suffix("+", LcGrekLetter), b)
