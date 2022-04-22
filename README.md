@@ -132,13 +132,18 @@ capture(...)
 namedCapture(name, ...)
 ref(nuberOrLabel)
 
-// helpers
+// other functions
+charSet.union(...cs) // character that match any of the provided charsets
+charSet.diff(a, b) // characters that match charSet `a` and don't match charSet `b`
+charSet.inter(a, b) // characters that match both charSet `a` and charSet `b`
+
 atomic(...) // helper to prevent backtracking
 flags.add(...) // add flags
 ```
 
-###
+### details
 
+----
 
 #### flags(opts, ...exprs), flags(opts)(...exprs)
 
@@ -148,6 +153,8 @@ flags.add(...) // add flags
 > global = flags(g); global('a')
 /a/g
 ```
+
+----
 
 #### either(...exprs)
 
@@ -163,6 +170,8 @@ flags.add(...) // add flags
 /ab|cd/
 ```
 
+----
+
 #### sequence(...exprs)
 
 ```JS
@@ -176,6 +185,8 @@ flags.add(...) // add flags
 > sequence(/a/, /b|c/)
 /a(?:b|c)/
 ```
+
+----
 
 #### suffix(quantifier, ...exprs) : RegExp
 #### suffix(quantifier)(...exprs) : RegExp
@@ -208,6 +219,8 @@ non-string quantifiers are converted to String and wrapped in braces such that
 /a*/
 ```
 
+----
+
 #### maybe(...exprs)
 
 shorcut for the `?` quantifier
@@ -217,12 +230,16 @@ shorcut for the `?` quantifier
 /a?/
 ```
 
+----
+
 #### lookAhead(...exprs)
 
 ```JS
 > lookAhead(/a/, /b/, /c/)
 /(?=abc)/
 ```
+
+----
 
 #### avoid(...exprs)
 
@@ -233,6 +250,8 @@ Negative look ahead
 /(?!abc)/
 ```
 
+----
+
 #### lookBehind(...exprs)
 
 Look behind
@@ -241,6 +260,8 @@ Look behind
 > lookBehind(/a/, /b/, /c/)
 /(?<=abc)/
 ```
+
+----
 
 #### notBehind(...exprs)
 
@@ -251,12 +272,16 @@ Negative look behind
 /(?<!abc)/
 ```
 
+----
+
 #### capture (...exprs) : RegExp
 
 ```JS
 > capture(/a/, /b/, /c/)
 /(abc)/
 ```
+
+----
 
 #### ref(label: string) : RegExp
 #### ref(n: number) : RegExp
@@ -280,6 +305,8 @@ See the [back references](#back-references) section below for a detailed descrip
 /(\w)(?:(\1)|.)/u
 ```
 
+----
+
 #### atomic(...exprs) : RegExp
 
 ```JS
@@ -294,6 +321,70 @@ See the [back references](#back-references) section below for a detailed descrip
 ```
 
 `atomic()` adds an unnamed capturing group. There's no way around it as of until JS adds support for atomic groups. You'd be better off using named capturing groups if you want to extract sub-matches, they are easier the handle than match indices which go all over the place anyway when you compose RegExps.
+
+----
+
+#### charSet.union(...cs)
+#### charSet.diff(a, b)
+#### charSet.inter(a, b)
+
+Set operations on charSets... well, operations on arbitrary RegExps, actually. They can be fed anything but are probably most useful when used with CharSets, CharClasses, and Unicode properties.
+
+- `charSet.union(...cs)`: returns a RegExp that matches any of the arguments
+
+```JS
+const abcd = cs.union(/[ab]/, /c/, /d/)
+abcd.test(a) // true
+abcd.test(b) // true
+abcd.test(c) // true
+abcd.test(d) // true
+abcd.test(e) // false
+
+```
+
+- `charSet.diff(a, b)`: returns a RegExp that matches the characters matched by `a` and don't match those of `b`
+
+```JS
+const ab = cs.diff(/[a-d]/, /[cd]/)
+ab.test(a) // true
+ab.test(b) // true
+ab.test(c) // false
+ab.test(d) // false
+```
+
+- `charSet.inter(a, b)`: returns a RegExp that matches characters matched by both `a` and `b`.
+const ab = cs.inter(/[a-c]/, /[b-d]/)
+
+```JS
+bc.test(a) // false
+bc.test(b) // true
+bc.test(c) // true
+bc.test(d) // false
+```
+
+This is especially useful when combined with Unicode properties:
+
+```JS
+const LcCyrl = charSetInter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
+LcCyrl.test("б") // true
+LcCyrl.test("Б") // false
+LcCyrl.test("b") // false
+
+const UcGrek = = charSetInter(/\p{Uppuercase}/u, /\p{Script=Greek}/u)
+UcGrek.test("Γ") // true
+UcGrek.test("γ") // false
+UcGrek.test("W") // false
+
+// another example
+const asciiNonLetter = cs.diff(/[\0\x7f]/, /[A-Za-z]/)
+asciiNonLetter.test(":") // true
+asciiNonLetter.test("a") // false
+
+```
+
+The full list of supported Unicode properties is [listed in the ECMAScript spec](https://tc39.es/ecma262/#sec-runtime-semantics-unicodematchproperty-p).
+
+----
 
 ### Atomic matching
 
@@ -387,31 +478,6 @@ The depth is `2`, for the levels in the call stack(one for `capture()`, one for 
 
 - `compose-regexp` will not be able to mix `i`-flagged and non-`i`-flagged without native support for the scenario. Case-insensitive matching involves case folding both the pattern and the source string, and `compose-regexp` can't access the latter.
 
-- `compose-regexp` currently doesn't deal with character set composition, this is on my TODO list. In the mean time, you can get pretty far with these helpers which are functional, but don't give the most optimized results.
-
-You'll have to make sure that you're feeding them CharSets (`/[abc]/`), unicode property excapes (`/\p{Any}/`) or simple atoms (`/./` or `'a'`).
-
-```JS
-const charSetUnion = (...cs) => either(...cs)
-const charSetDiff = (a, b) => sequence(avoid(b), a)
-const charSetInter = (a, b) => sequence(avoid(charSetDiff(a, b)), a)
-
-charSetInter(/[a-c]/, /[b-d]/).test("a") // false
-charSetInter(/[a-c]/, /[b-d]/).test("b") // true
-charSetInter(/[a-c]/, /[b-d]/).test("c") // true
-charSetInter(/[a-c]/, /[b-d]/).test("d") // false
-```
-
-With this, you can match, say lower case cyrillic:
-
-```JS
-const LcCyrl = charSetInter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
-LcCyrl.test("б") // true
-LcCyrl.test("Б") // false
-LcCyrl.test("b") // false
-```
-
-The full list of supported Unicode properties is [listed in the ECMAScript spec](https://tc39.es/ecma262/#sec-runtime-semantics-unicodematchproperty-p).
 
 ## License MIT
 

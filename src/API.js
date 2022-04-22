@@ -175,3 +175,13 @@ export var flags = {add: function add(flags) {
 	? _flags.bind(flagAdd, flags)
 	: _flags.apply(flagAdd, arguments)
 }}
+
+
+function csDiff(a, b) {return sequence(avoid(b), a)}
+function csInter(a, b) {return sequence(avoid(csDiff(a, b)), a)}
+
+export var charSet = {
+	union: either,
+	diff: csDiff,
+	inter: csInter
+}

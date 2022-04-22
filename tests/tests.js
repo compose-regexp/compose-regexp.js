@@ -4,7 +4,7 @@ import o from 'ospec'
 import {nullProto, r} from '../test-utils/utils.js'
 
 import {
-	atomic, avoid, capture, either, flags,
+	atomic, avoid, capture, charSet, either, flags,
 	lookAhead, lookBehind, namedCapture,
 	notBehind, ref, sequence, suffix
 } from '../compose-regexp.js'
@@ -929,11 +929,7 @@ o.spec("backwards and atoms", function() {
 
 o.spec("README Examples", function() {
 	o("CharSet operations", function() {
-		const charSetUnion = (...cs) => either(...cs)
-		const charSetDiff = (a, b) => sequence(avoid(b), a)
-		const charSetInter = (a, b) => sequence(avoid(charSetDiff(a, b)), a)
-
-		const abcd = charSetUnion(/[ab]/, /c/, 'd')
+		const abcd = charSet.union(/[ab]/, /c/, 'd')
 
 		o(abcd.test('a')).equals(true)
 		o(abcd.test('b')).equals(true)
@@ -941,21 +937,21 @@ o.spec("README Examples", function() {
 		o(abcd.test('d')).equals(true)
 
 
-		const ab = charSetDiff(/[abcd]/, /[cd]/)
+		const ab = charSet.diff(/[abcd]/, /[cd]/)
 
 		o(ab.test('a')).equals(true)
 		o(ab.test('b')).equals(true)
 		o(ab.test('c')).equals(false)
 		o(ab.test('d')).equals(false)
 
-		const bc = charSetInter(/[a-c]/, /[b-d]/)
+		const bc = charSet.inter(/[a-c]/, /[b-d]/)
 
 		o(bc.test('a')).equals(false)
 		o(bc.test('b')).equals(true)
 		o(bc.test('c')).equals(true)
 		o(bc.test('d')).equals(false)
 
-		const LcCyrl = charSetInter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
+		const LcCyrl = charSet.inter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
 		o(LcCyrl.test("б")).equals(true)
 		o(LcCyrl.test("Б")).equals(false)
 
