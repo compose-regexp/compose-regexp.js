@@ -43,10 +43,6 @@ You can test it live on [flems.io](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYF
 
 <!-- START toc -->
 - [compose-regexp.js](#compose-regexpjs)
-        - [Highlights](#highlights)
-            - [Fixing ReDOS](#fixing-redos)
-            - [Combining character sets](#combining-character-sets)
-    - [TOC](#toc)
     - [Why you may need this lib](#why-you-may-need-this-lib)
     - [Usage](#usage)
         - [Installation](#installation)

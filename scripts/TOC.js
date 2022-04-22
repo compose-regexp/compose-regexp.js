@@ -28,13 +28,22 @@ const README = fs.readFileSync('./README.md', {encoding: 'utf-8'}).toString()
 const slugify = text => `[${text}](#${text.replace(/ /g, '-').replace(/[^-\p{ID_Continue}]/gu, '').toLowerCase()})`
 
 let inFence = false
-
+let previousDepth = 0
 const TOC = [...README.matchAll(titlesMatcher)]
 // ignore the content of code fences
 .filter(({groups: {fence}}) => {
     const wasInFence = inFence
     if (fence != null) inFence = !inFence
     return !(fence || wasInFence)
+})
+.filter(({groups: {level}}) => {
+    const depth = level.length
+    if (previousDepth - depth < -1) return false
+    previousDepth = depth
+    return true
+})
+.filter(({groups:{content}}) => {
+    return content !== 'TOC'
 })
 .map(({groups: {level, content}})=>{
     const indent = (level.length -1) * 4
