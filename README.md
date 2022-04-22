@@ -115,21 +115,21 @@ Therefore:
 
 ```JS
 // Core combinators
-either(...) //  /a|b/
-sequence(...) // /ab/
-suffix(quantifier, ...) // /a+/, /(?:a|b){1,3}/
-maybe(...) // shortcut for `suffix('?', ...)`
+either(...exprs) //  /a|b/
+sequence(...exprs) // /ab/
+suffix(quantifier, ...exprs) // /a+/, /(?:a|b){1,3}/
+maybe(...exprs) // shortcut for `suffix('?', ...)`
 
 
 // predicates
-avoid(...)     // negative lookAhead: /(?!...)/
-lookAhead(...) // positive lookahead: /(?=...)/
-lookBehind(...) // positive behind: /(?<=...)/
-notBehind(...) // negative behind: /(?<!...)/
+avoid(...exprs)     // negative lookAhead: /(?!...)/
+lookAhead(...exprs) // positive lookahead: /(?=...)/
+lookBehind(...exprs) // positive behind: /(?<=...)/
+notBehind(...exprs) // negative behind: /(?<!...)/
 
 // captures and references 
-capture(...)
-namedCapture(name, ...)
+capture(...exprs)
+namedCapture(name, ..exprs.)
 ref(nuberOrLabel)
 
 // other functions
@@ -137,8 +137,8 @@ charSet.union(...cs) // character that match any of the provided charsets
 charSet.diff(a, b) // characters that match charSet `a` and don't match charSet `b`
 charSet.inter(a, b) // characters that match both charSet `a` and charSet `b`
 
-atomic(...) // helper to prevent backtracking
-flags.add(...) // add flags
+atomic(...exprs) // helper to prevent backtracking
+flags.add(flags, ...exprs) // add flags
 ```
 
 ### details
