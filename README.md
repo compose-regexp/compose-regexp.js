@@ -357,7 +357,7 @@ ab.test(d) // false
 - `charSet.inter(a, b)`: returns a RegExp that matches characters matched by both `a` and `b`.
 
 ```JS
-const ab = charSet.inter(/[a-c]/, /[b-d]/)
+const bc = charSet.inter(/[a-c]/, /[b-d]/)
 
 bc.test(a) // false
 bc.test(b) // true
