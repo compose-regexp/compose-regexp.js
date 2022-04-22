@@ -38,8 +38,8 @@ const Str = sequence(
     capture(/['"]/),
     suffix('*?', // a frugal Kleene star, isn't it cute?
         either (
-            ["\\", /./s)], // using the `s` flag to match escaped line returns
-            /./            // no `s` flag here, bare line returns are invalid
+            ["\\", /./s)], // using the `s` flag to match escaped line terminators
+            /./            // no `s` flag here, bare line terminators are invalid
         )
     ),
     ref(1)
@@ -405,8 +405,9 @@ With this, you can match, say lower case cyrillic:
 
 ```JS
 const LcCyrl = charSetInter(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
-p(LcCyrl.test("Б"))
-p(LcCyrl.test("б"))
+LcCyrl.test("б") // true
+LcCyrl.test("Б") // false
+LcCyrl.test("b") // false
 ```
 
 The full list of supported Unicode properties is [listed in the ECMAScript spec](https://tc39.es/ecma262/#sec-runtime-semantics-unicodematchproperty-p).
