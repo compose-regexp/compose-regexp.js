@@ -15,8 +15,8 @@
 
 	// This is currently used for modern vs legacy feature detection
 	var supportsU = allFlags.indexOf('u') !== -1;
-	var canFoldM = false;
-	try {new RegExp('(?<=)'); canFoldM = true;} catch(e){}
+	var supportsLookBehind = false;
+	try {new RegExp('(?<=)'); supportsLookBehind = true;} catch(e){}
 	var hasOwn = ({}).hasOwnProperty;
 	function identity(x) {return x}
 	var map = [].map;
@@ -405,8 +405,8 @@
 			if (!inCClass) {
 				if (match === '[') inCClass = true;
 				return (x.key.dotAll && match === '.') ? '[^]' 
-				: (x.key.multiline && match === '^'&& canFoldM) ? '(?:^|(?<=[\\n\\r\\u2028\\u2029]))'
-				: (x.key.multiline && match === '$' && canFoldM) ? '(?:$|(?=[\\n\\r\\u2028\\u2029]))'
+				: (x.key.multiline && match === '^'&& supportsLookBehind) ? '(?:^|(?<=[\\n\\r\\u2028\\u2029]))'
+				: (x.key.multiline && match === '$' && supportsLookBehind) ? '(?:$|(?=[\\n\\r\\u2028\\u2029]))'
 				: match
 			} else {
 				if (match === ']') inCClass = false;
@@ -430,7 +430,7 @@
 		var hasM = x.key.multiline;
 
 		if ($flagValidator.I != null && hasI !== $flagValidator.I) throw new SyntaxError("Can't combine i and non-i regexps: " + x.key)
-		if (!canFoldM && $flagValidator.M != null && hasI !== $flagValidator.M) throw new SyntaxError("Can't combine m and non-m regexps: " + x.key)
+		if (!supportsLookBehind && $flagValidator.M != null && hasI !== $flagValidator.M) throw new SyntaxError("Can't combine m and non-m regexps: " + x.key)
 
 		$flagValidator.I = hasI;
 		$flagValidator.M = hasM;
@@ -589,7 +589,7 @@
 	}
 
 	function getFlags(){
-		return (($flagValidator.I ? 'i' : '') + (canFoldM ? '' : $flagValidator.M ? 'm' : '') + ($flagValidator.U ? 'u' : ''))
+		return (($flagValidator.I ? 'i' : '') + (supportsLookBehind ? '' : $flagValidator.M ? 'm' : '') + ($flagValidator.U ? 'u' : ''))
 	}
 
 	function finalize(x, options) {
@@ -619,6 +619,10 @@
 
 	var empty = /(?:)/;
 
+	function throwIfNoLookBehind(name) {
+		if (!supportsLookBehind) throw new Error("no support for /(?<=...)/ which is required by " + name + "()")
+	}
+
 	function either() {
 		if (!arguments.length) return empty
 	    $$_resetRefCapsAndFlags();
@@ -635,8 +639,9 @@
 	    return finalize(_sequence.apply(null, arguments))
 	}
 
-	function makeAssertion (before, direction) {
+	function makeAssertion (before, direction, gate, name) {
 		return function () {
+			if (gate != null) gate(name);
 			if (!arguments.length) return empty
 	        var previousDir = $direction.current;
 	        $direction.current = direction;
@@ -652,8 +657,8 @@
 
 	var lookAhead = makeAssertion('(?=', 1);
 	var notAhead = makeAssertion('(?!', 1);
-	var lookBehind = makeAssertion('(?<=', -1);
-	var notBehind = makeAssertion('(?<!', -1);
+	var lookBehind = makeAssertion('(?<=', -1, throwIfNoLookBehind, "lookBehind");
+	var notBehind = makeAssertion('(?<!', -1, throwIfNoLookBehind, "notBehind");
 
 	var suffixMatcher = /^(?:\+|\*|\?|\{(\d+),?(\d*)\})\??$/;
 
@@ -779,19 +784,30 @@
 	    : sequence(ref(1), lookBehind(capture.apply(null, arguments)))
 	}
 
+	var allU = supportsU && new RegExp('[^]', 'u');
 	function csDiff(a, b) {return sequence(notAhead(b), a)}
 	function csInter(a, b) {return sequence(notAhead(csDiff(a, b)), a)}
+	function csComplement(a) {return csDiff((supportsU && a.unicode) ? allU : /[^]/, a)}
 
 	var charSet = {
-		union: either,
 		difference: csDiff,
-		intersection: csInter
+		intersection: csInter,
+		complement: csComplement,
+		union: either
 	};
 
 	function bound(pt) {
+		throwIfNoLookBehind("bound");
 		return either(
 			[notBehind(pt), lookAhead(pt)],
 			[lookBehind(pt), notAhead(pt)]
+		)
+	}
+	function noBound(pt) {
+		throwIfNoLookBehind("noBound");
+		return either(
+			[notBehind(pt), notAhead(pt)],
+			[lookBehind(pt), lookAhead(pt)]
 		)
 	}
 
@@ -805,6 +821,7 @@
 	exports.lookBehind = lookBehind;
 	exports.maybe = maybe;
 	exports.namedCapture = namedCapture;
+	exports.noBound = noBound;
 	exports.notAhead = notAhead;
 	exports.notBehind = notBehind;
 	exports.ref = ref;

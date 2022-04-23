@@ -1,4 +1,4 @@
-import {slice, supportsU, unescape} from './utils.js'
+import {slice, supportsLookBehind, supportsU, unescape} from './utils.js'
 
 import {assemble, decorate, $direction, finalize, flagsMatcher, $flagValidator, groupNameMatcher, metadata, needsWrappingForQuantifier, $$_resetRefCapsAndFlags} from './core.js'
 
@@ -18,6 +18,10 @@ import {assemble, decorate, $direction, finalize, flagsMatcher, $flagValidator, 
 
 var empty = /(?:)/
 
+function throwIfNoLookBehind(name) {
+	if (!supportsLookBehind) throw new Error("no support for /(?<=...)/ which is required by " + name + "()")
+}
+
 export function either() {
 	if (!arguments.length) return empty
     $$_resetRefCapsAndFlags()
@@ -34,8 +38,9 @@ export function sequence() {
     return finalize(_sequence.apply(null, arguments))
 }
 
-function makeAssertion (before, direction) {
+function makeAssertion (before, direction, gate, name) {
 	return function () {
+		if (gate != null) gate(name)
 		if (!arguments.length) return empty
         var previousDir = $direction.current
         $direction.current = direction
@@ -51,8 +56,8 @@ function makeAssertion (before, direction) {
 
 export var lookAhead = makeAssertion('(?=', 1)
 export var notAhead = makeAssertion('(?!', 1)
-export var lookBehind = makeAssertion('(?<=', -1)
-export var notBehind = makeAssertion('(?<!', -1)
+export var lookBehind = makeAssertion('(?<=', -1, throwIfNoLookBehind, "lookBehind")
+export var notBehind = makeAssertion('(?<!', -1, throwIfNoLookBehind, "notBehind")
 
 var suffixMatcher = /^(?:\+|\*|\?|\{(\d+),?(\d*)\})\??$/
 
@@ -178,18 +183,29 @@ export function atomic() {
     : sequence(ref(1), lookBehind(capture.apply(null, arguments)))
 }
 
+var allU = supportsU && new RegExp('[^]', 'u')
 function csDiff(a, b) {return sequence(notAhead(b), a)}
 function csInter(a, b) {return sequence(notAhead(csDiff(a, b)), a)}
+function csComplement(a) {return csDiff((supportsU && a.unicode) ? allU : /[^]/, a)}
 
 export var charSet = {
-	union: either,
 	difference: csDiff,
-	intersection: csInter
+	intersection: csInter,
+	complement: csComplement,
+	union: either
 }
 
 export function bound(pt) {
+	throwIfNoLookBehind("bound")
 	return either(
 		[notBehind(pt), lookAhead(pt)],
 		[lookBehind(pt), notAhead(pt)]
+	)
+}
+export function noBound(pt) {
+	throwIfNoLookBehind("noBound")
+	return either(
+		[notBehind(pt), notAhead(pt)],
+		[lookBehind(pt), lookAhead(pt)]
 	)
 }

@@ -1,11 +1,11 @@
 import o from 'ospec'
 
 // This must happen before importing the lib
-import {nullProto, r} from '../test-utils/utils.js'
+import {nullProto, r, m} from '../test-utils/utils.js'
 
 import {
 	atomic, notAhead, bound, capture, charSet, either,
-	flags, lookAhead, lookBehind, namedCapture,
+	flags, lookAhead, lookBehind, namedCapture, noBound,
 	notBehind, ref, sequence, suffix
 } from '../compose-regexp.js'
 
@@ -927,41 +927,98 @@ o.spec("backwards and atoms", function() {
 	})
 })
 
-o.spec("README Examples", function() {
+o.spec("other functions", function() {
 	o("CharSet operations", function() {
 		const abcd = charSet.union(/[ab]/, /c/, 'd')
 
-		o(abcd.test('a')).equals(true)
-		o(abcd.test('b')).equals(true)
-		o(abcd.test('c')).equals(true)
-		o(abcd.test('d')).equals(true)
+		o(abcd).satisfies(m({ok: ['a', 'b', 'c', 'd'], ko: ['e', 'A', '0']}))
 
 
 		const ab = charSet.difference(/[abcd]/, /[cd]/)
 
-		o(ab.test('a')).equals(true)
-		o(ab.test('b')).equals(true)
-		o(ab.test('c')).equals(false)
-		o(ab.test('d')).equals(false)
+		o(ab).satisfies(m({ok: ['a', 'b'], ko: ['e', 'A', '0', 'c', 'd']}))
+
 
 		const bc = charSet.intersection(/[a-c]/, /[b-d]/)
 
-		o(bc.test('a')).equals(false)
-		o(bc.test('b')).equals(true)
-		o(bc.test('c')).equals(true)
-		o(bc.test('d')).equals(false)
+		o(bc).satisfies(m({ok: ['b', 'c'], ko: ['e', 'A', '0', 'a', 'd']}))
+
 
 		const LcCyrl = charSet.intersection(/\p{Lowercase}/u, /\p{Script=Cyrillic}/u)
-		o(LcCyrl.test("б")).equals(true)
-		o(LcCyrl.test("Б")).equals(false)
 
+		o(LcCyrl).satisfies(m({ok: ["б"], ko: ['e', 'A', '0', 'c', 'd', "Б"]}))
+
+
+		const not_bc = charSet.complement(/[bc]/)
+		const bcRef = {ok: ['b', 'c'], ko: ['a', 'd']}
+
+		o(/[bc]/).satisfies(m(bcRef))
+		o(not_bc).notSatisfies(m(bcRef))
+
+
+		const theseAstralChars = /[\u{80000}-\u{9ffff}]/u
+		const notTheseAstralChars = charSet.complement(theseAstralChars)
+		const astralRef = {
+			ok: ['\u{80000}', '\u{8ffff}', '\u{9ffff}'],
+			ko: ['\0', 'a', '\u{7ffff}', '\u{100000}', '\u{10ffff}']
+		}
+
+		o(theseAstralChars).satisfies(m(astralRef))
+		o(notTheseAstralChars).notSatisfies(m(astralRef))
 	})
 })
 
-o.spec("bound", function() {
-	o("works", function() {
-		o(bound(/a/))
-		.satisfies(r(/(?<!a)(?=a)|(?<=a)(?!a)/))
+o.spec("bounds", function() {
+	o("bound() works", function() {
+		const numBound = flags.add('y', (bound(/[0-9]/)))
+
+		o(numBound.test("10")).equals(true)
+
+		numBound.lastIndex = 1
+
+		o(numBound.test("10")).equals(false)
+
+		numBound.lastIndex = 2
+
+		o(numBound.test("10")).equals(true)
+
+		numBound.lastIndex = 3
+
+		o(numBound.test("10 ")).equals(false)
+
+		numBound.lastIndex = 3
+
+		o(numBound.test("10 a")).equals(false)
+
+		numBound.lastIndex = 3
+
+		o(numBound.test("10aa")).equals(false)
+
+	})
+	o("noBound() works", function () {
+		const numNoBound = flags.add('y', (noBound(/[0-9]/)))
+
+		o(numNoBound.test("10")).equals(false)
+
+		numNoBound.lastIndex = 1
+
+		o(numNoBound.test("10")).equals(true)
+
+		numNoBound.lastIndex = 2
+
+		o(numNoBound.test("10")).equals(false)
+
+		numNoBound.lastIndex = 3
+
+		o(numNoBound.test("10 ")).equals(true)
+
+		numNoBound.lastIndex = 3
+
+		o(numNoBound.test("10 a")).equals(true)
+
+		numNoBound.lastIndex = 3
+
+		o(numNoBound.test("10aa")).equals(true)
 
 	})
 })

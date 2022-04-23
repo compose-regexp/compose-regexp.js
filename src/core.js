@@ -1,5 +1,5 @@
 
-import {allFlags, canFoldM, hasOwn, identity, map, RegExpRef, store, supportsU, unescape} from "./utils.js"
+import {allFlags, supportsLookBehind, hasOwn, identity, map, RegExpRef, store, supportsU, unescape} from "./utils.js"
 
 // General notes:
 // 
@@ -337,8 +337,8 @@ function fixForFlags(x) {
 		if (!inCClass) {
 			if (match === '[') inCClass = true
 			return (x.key.dotAll && match === '.') ? '[^]' 
-			: (x.key.multiline && match === '^'&& canFoldM) ? '(?:^|(?<=[\\n\\r\\u2028\\u2029]))'
-			: (x.key.multiline && match === '$' && canFoldM) ? '(?:$|(?=[\\n\\r\\u2028\\u2029]))'
+			: (x.key.multiline && match === '^'&& supportsLookBehind) ? '(?:^|(?<=[\\n\\r\\u2028\\u2029]))'
+			: (x.key.multiline && match === '$' && supportsLookBehind) ? '(?:$|(?=[\\n\\r\\u2028\\u2029]))'
 			: match
 		} else {
 			if (match === ']') inCClass = false
@@ -362,7 +362,7 @@ function $$_checkFlags(x) {
 	var hasM = x.key.multiline
 
 	if ($flagValidator.I != null && hasI !== $flagValidator.I) throw new SyntaxError("Can't combine i and non-i regexps: " + x.key)
-	if (!canFoldM && $flagValidator.M != null && hasI !== $flagValidator.M) throw new SyntaxError("Can't combine m and non-m regexps: " + x.key)
+	if (!supportsLookBehind && $flagValidator.M != null && hasM !== $flagValidator.M) throw new SyntaxError("Can't combine m and non-m regexps: " + x.key)
 
 	$flagValidator.I = hasI
 	$flagValidator.M = hasM
@@ -521,7 +521,7 @@ export function assemble(patterns, either, contextRequiresWrapping, initialCapIn
 }
 
 function getFlags(){
-	return (($flagValidator.I ? 'i' : '') + (canFoldM ? '' : $flagValidator.M ? 'm' : '') + ($flagValidator.U ? 'u' : ''))
+	return (($flagValidator.I ? 'i' : '') + (supportsLookBehind ? '' : $flagValidator.M ? 'm' : '') + ($flagValidator.U ? 'u' : ''))
 }
 
 export function finalize(x, options) {

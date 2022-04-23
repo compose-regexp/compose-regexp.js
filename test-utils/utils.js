@@ -87,6 +87,25 @@ export function r(ref){
 	}
 }
 
+export function m(spec) {
+	if (!Object.hasOwn(spec, 'ok') && !Object.hasOwn(spec, 'ko')) throw new TypeError("No `ok` nor `ko` in `m()` test")
+	if (Object.hasOwn(spec, 'ok') && !Array.isArray(spec.ok)) throw new TypeError("Array expected for spec.ok")
+	if (Object.hasOwn(spec, 'ko') && !Array.isArray(spec.ko)) throw new TypeError("Array expected for spec.ko")
+	return function (rx) {
+		const errors = []
+		const successes = []
+		void (spec.ok || []).forEach(ok => {
+			if (!rx.test(ok)) errors.push(`${rx} should have matched ${JSON.stringify(ok)}`)
+			else successes.push(`${rx} shouldn't have matched ${JSON.stringify(ok)}`)
+		})
+		void (spec.ko || []).forEach(ko => {
+			if (rx.test(ko)) errors.push(`${rx} shouldn't have matched ${JSON.stringify(ko)}`)
+			else successes.push(`${rx} should have matched ${JSON.stringify(ko)}`)
+		})
+		return {pass: errors.length === 0, message: (errors.length === 0 ? successes : errors).join('\n')}
+	}
+}
+
 let c = 0
 const alreadyPrinted = Object.create(null)
 global.TODO = (...items) => {

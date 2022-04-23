@@ -9,8 +9,8 @@ export var allFlags = []
 
 // This is currently used for modern vs legacy feature detection
 export var supportsU = allFlags.indexOf('u') !== -1
-export var canFoldM = false
-try {new RegExp('(?<=)'); canFoldM = true} catch(e){}
+export var supportsLookBehind = false
+try {new RegExp('(?<=)'); supportsLookBehind = true} catch(e){}
 
 export var forEach = [].forEach
 export var hasOwn = ({}).hasOwnProperty

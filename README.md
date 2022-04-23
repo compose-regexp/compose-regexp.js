@@ -52,7 +52,7 @@ You can test it live on [flems.io](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYF
     - [API](#api)
         - [In a nutshell](#in-a-nutshell)
         - [General notes](#general-notes)
-        - [Details](#details)
+        - [Basic combinators](#basic-combinators)
             - [either(...exprs) : RegExp](#eitherexprs--regexp)
             - [sequence(...exprs) : RegExp](#sequenceexprs--regexp)
             - [suffix(quantifier, ...exprs) : RegExp](#suffixquantifier-exprs--regexp)
@@ -60,22 +60,30 @@ You can test it live on [flems.io](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYF
             - [maybe(...exprs) : RegExp](#maybeexprs--regexp)
             - [flags(opts, ...exprs) : RegExp](#flagsopts-exprs--regexp)
             - [flags(opts)(...exprs) : RegExp](#flagsoptsexprs--regexp)
+        - [Captures and References](#captures-and-references)
             - [capture(...exprs) : RegExp](#captureexprs--regexp)
             - [namedCapture(...exprs) : RegExp](#namedcaptureexprs--regexp)
             - [ref(label: string) : RegExp](#reflabel-string--regexp)
-            - [ref(n: number) : RegExp](#refn-number--regexp)
-            - [ref(n: number, d: number) : RegExp](#refn-number-d-number--regexp)
+            - [ref(n: number) : RegExp (thunk)](#refn-number--regexp-thunk)
+            - [ref(n: number, depth: number) : RegExp (thunk)](#refn-number-depth-number--regexp-thunk)
+        - [Assertions](#assertions)
             - [lookAhead(...exprs) : RegExp](#lookaheadexprs--regexp)
             - [notAhead(...exprs) : RegExp](#notaheadexprs--regexp)
             - [lookBehind(...exprs) : RegExp](#lookbehindexprs--regexp)
             - [notBehind(...exprs) : RegExp](#notbehindexprs--regexp)
+        - [Derived Utilites](#derived-utilites)
             - [atomic(...exprs) : RegExp](#atomicexprs--regexp)
-            - [charSet.union(...cs) : RegExp](#charsetunioncs--regexp)
+            - [bound(...exprs) : RegExp](#boundexprs--regexp)
+            - [noBound(...exprs) : RegExp](#noboundexprs--regexp)
             - [charSet.difference(a, b) : RegExp](#charsetdifferencea-b--regexp)
             - [charSet.intersection(a, b) : RegExp](#charsetintersectiona-b--regexp)
+            - [charSet.complement(cs) : RegExp](#charsetcomplementcs--regexp)
+            - [charSet.union(...cs) : RegExp](#charsetunioncs--regexp)
     - [Atomic matching](#atomic-matching)
     - [Let's talk about flags](#lets-talk-about-flags)
     - [Back References](#back-references)
+    - [Browser support](#browser-support)
+    - [Contributing](#contributing)
     - [Limitations and missing pieces](#limitations-and-missing-pieces)
     - [License MIT](#license-mit)<!-- END toc -->
 
@@ -168,33 +176,37 @@ And we got it done!
 
 ```JS
 // Core combinators
-either(...exprs) //  /a|b/
-sequence(...exprs) // /ab/
+either(...exprs)             // /a|b/
+sequence(...exprs)           // /ab/
 suffix(quantifier, ...exprs) // /a+/, /(?:a|b){1,3}/
-maybe(...exprs) // shortcut for `suffix('?', ...)`
-flags.add(flags, ...exprs) // add flags
+maybe(...exprs)              // shortcut for `suffix('?', ...)`
+flags.add(flags, ...exprs)   // add flags
 
 
 // captures and references
-capture(...exprs)
-namedCapture(label, ...exprs)
-ref(nuberOrLabel)
-
+capture(...exprs)              // /(...)/
+namedCapture(label, ...exprs)  // /(?<label>...)/
+ref(nuberOrLabel)              // /\1/ or /\k<label>/
+ref(num, depth)                // /\1/
 
 // predicates
-lookAhead(...exprs) // positive look ahead: /(?=...)/
+lookAhead(...exprs)    // positive look ahead: /(?=...)/
 notAhead(...exprs)     // negative look ahead: /(?!...)/
-lookBehind(...exprs) // positive look behind: /(?<=...)/
-notBehind(...exprs) // negative look behind: /(?<!...)/
+lookBehind(...exprs)   // positive look behind: /(?<=...)/
+notBehind(...exprs)    // negative look behind: /(?<!...)/
 
 // other functions
 atomic(...exprs) // helper to prevent backtracking
 
-bound(...exprs) // like /\b/, but for arbitrary charSets rather than just \w
+bound(...exprs) // like /\b/, but for arbitrary character classes rather than just \w
+noBound(...exprs) // like /\B/ for arbitrary character classes
 
-charSet.union(...cs) // character that match any of the provided charsets
-charSet.difference(a, b) // characters that match charSet `a` and don't match charSet `b`
-charSet.intersection(a, b) // characters that match both charSet `a` and charSet `b`
+// Operating on character classes.
+// The result of these function will match ...
+charSet.difference(a, b) // ... characters that match charSet `a` and don't match charSet `b`
+charSet.intersection(a, b) // ... characters that match both charSet `a` and charSet `b`
+charsSet.complement(a) // ... characters that don't match `a`
+charSet.union(...cs) // ... character that match any of the provided charsets
 
 // The lack of non-capturing group API is deliberate. We insert them
 // automatically where needed, they are not a user concern when using
@@ -223,15 +235,19 @@ Therefore:
 - `compose-regexp` understand RegExp syntax, and will add non-capturing groups automatically where relevant. e.g. `suffix('*', '.', /\w+/)` will turn into `/(?:\.\w+)*/`
 
 - When composing RegExps with mixed flags:
-
     - The `u` flag is contagious, and non-`u`. RegExps will be upgraded if possible.
-
     - The other flags of regexps passed as parameters are ignored, and always reset to false on the result unless set by `flags()`. This is obviously suboptimal, and will be improved in time.
 - Back references (`\1`, etc...) are automatically upgraded suc that `sequence(/(\w)\1/, /(\d)\1/)` becomes `/(\w)\1(\d)\2/`. The `ref()` function lets one create refs programmatically:
 
-### Details
+    ```JS
+    > sequence(capture(), ref(1))
+    /()\1/
+    // whereas this wouldn't work
+    > sequence(capture, /\1/)
+    /()\2/ // 
+    ```
 
-----
+### Basic combinators
 
 #### either(...exprs) : RegExp
 
@@ -321,6 +337,8 @@ shorcut for the `?` quantifier
 
 ----
 
+### Captures and References
+
 #### capture(...exprs) : RegExp
 
 Create an anonymous capturing group.
@@ -344,8 +362,8 @@ Create an named capturing group.
 ----
 
 #### ref(label: string) : RegExp
-#### ref(n: number) : RegExp
-#### ref(n: number, d: number) : RegExp
+#### ref(n: number) : RegExp (thunk)
+#### ref(n: number, depth: number) : RegExp (thunk)
 
 When passed a number, returns a specially crafted RegExp that can't match anything as is but will be turned into a back reference when composed.
 See the [back references](#back-references) section below for a detailed description
@@ -361,11 +379,13 @@ See the [back references](#back-references) section below for a detailed descrip
 /(.)\1/
 
 // a ref to a capture two levels up the call stack
-> sequence(capture(/\w/), either(capture(ref(1,2)), /./u))
+> sequence(capture(/\w/), either(capture(ref(1, 2)), /./u))
 /(\w)(?:(\1)|.)/u
 ```
 
 ----
+
+### Assertions
 
 #### lookAhead(...exprs) : RegExp
 
@@ -391,6 +411,8 @@ Negative look ahead.
 
 #### lookBehind(...exprs) : RegExp
 
+*Requires an engine that supports look behind assertions*
+
 Positive look behind.
 
 ```JS
@@ -402,6 +424,8 @@ Positive look behind.
 
 #### notBehind(...exprs) : RegExp
 
+*Requires an engine that supports look behind assertions*
+
 Negative look behind.
 
 ```JS
@@ -410,6 +434,8 @@ Negative look behind.
 ```
 
 ----
+
+### Derived Utilites
 
 #### atomic(...exprs) : RegExp
 
@@ -430,24 +456,49 @@ Returns a RegExp that will match `sequence(...exprs)`, but into which the engine
 
 ----
 
-#### charSet.union(...cs) : RegExp
-#### charSet.difference(a, b) : RegExp
-#### charSet.intersection(a, b) : RegExp
+#### bound(...exprs) : RegExp
 
-Set operations on charSets... well, operations on arbitrary RegExps, actually. They can be fed anything but are probably most useful when used with CharSets, CharClasses, and Unicode properties.
+*Requires an engine that supports look behind assertions*
 
-- `charSet.union(...cs)`: returns a RegExp that matches any of the arguments
+Returns a RegExp that works like `/\b/` does, but for an arbitrary char set.
 
 ```JS
-const abcd = charSet.union(/[ab]/, /c/, /d/)
+const numBound = flags.add('y', bound(/[0-9]/))
 
-abcd.test(a) // true
-abcd.test(b) // true
-abcd.test(c) // true
-abcd.test(d) // true
-abcd.test(e) // false
+numBound.test("q88p") // false (before q)
+
+numBound.lastIndex = 1
+
+numBound.test("q88p") // true (between 'q' and '8')
+
+numBound.lastIndex = 2
+
+numBound.test("q88p") // false (between both '8')
+
+numBound.lastIndex = 3
+
+numBound.test("q88p") // true (between '8' and 'p')
+
+numBound.lastIndex = 4
+
+numBound.test("q88p") // false (after the 'p')
 
 ```
+
+#### noBound(...exprs) : RegExp
+
+*Requires an engine that supports look behind assertions*
+
+`noBound(x)` returns a RegExp that succeeds where `bounds(x)` fails, and vice-versa.
+
+----
+
+#### charSet.difference(a, b) : RegExp
+#### charSet.intersection(a, b) : RegExp
+#### charSet.complement(cs) : RegExp
+#### charSet.union(...cs) : RegExp
+
+Set operations on charSets... well, operations on arbitrary RegExps, actually. They can be fed anything but are probably most useful when used with CharSets, CharClasses, and Unicode properties.
 
 - `charSet.difference(a, b)`: returns a RegExp that matches the characters matched by `a` and don't match those of `b`
 
@@ -492,6 +543,29 @@ asciiNonLetter.test("a") // false
 ```
 
 The full list of supported Unicode properties is [listed in the ECMAScript spec](https://tc39.es/ecma262/#sec-runtime-semantics-unicodematchproperty-p).
+
+- `charSet.complement(cs)` : Returns a RegExp that matches when the argument doesn't
+
+```JS
+const notDF = charSet.complement(/[D-F]/)
+notDF.test("C") // true
+notDF.test("DEF") // false
+notDF.test("G") // true
+
+```
+
+- `charSet.union(...cs)`: returns a RegExp that matches any of the arguments
+
+```JS
+const abcd = charSet.union(/[ab]/, /c/, /d/)
+
+abcd.test(a) // true
+abcd.test(b) // true
+abcd.test(c) // true
+abcd.test(d) // true
+abcd.test(e) // false
+
+```
 
 ----
 
@@ -553,7 +627,7 @@ Patterns with back reference intended for general, forward usage will be useless
 const errorInTheMaking = sequence(capture(/./), ref(1))
 const bw = lookBehind(errorInTheMaking) // throws, thankfully
 
-// this works
+// this works, the ref is evaluated in backward context thanks to the arrow function
 const bw = lookBehind(()=>[ref(1), capture(/./)])
 // => /(?<=\1(.))/
 ```
@@ -583,10 +657,29 @@ sequence(capture(/./), either(capture("a", ref(1), "b"), /./)
 
 The depth is `2`, for the levels in the call stack(one for `capture()`, one for `either()`).
 
+## Browser support
+
+This library is meant to work in ES5 environments, provided you use minimal polyfills (`Object.assign()`, essentially), but it hasn't been tested in that environment. If you find bugs please send them my way. TODO: bundle the test suite for old IE testing, stripping out tests that can't work there.
+
+Some of the library's features rely on newer RegExp features. The `u` flag can't be pulled out of thin air, for example, and neither can look behind assertions.
+
+## Contributing
+
+`compose-regexp` is most likely feature-complete. You may suggest improvements, but be warned that they are likely not to be accepted... However, don't let that stop you from proposing ideas, just don't set your expectations too high, and be courteous with the people you interact with around here.
+
+If you found a bug feel free to open an issue or submit a PR.
+
+The coding style may be a bit awkward.
+
+`compose-regexp` was started at a time where I still cared about IE compatibility and wanted to support ES6 modules. To keep the tooling minimal, I decided to write it in ES5 + ES6 modules, using Rollup as a bundler to create the UMD (and the bragging artefacts in `./dist`). The old version of Rollup that I use understands exactly that dialect, and I kept it when I started updating the lib in 2022. It is annoying when dealing with vararg functions, but otherwise a soothing experience for me, actually.
+
+The core has comments that will hopefully help you navigate the code base. Single quoted strings are used everywhere except for error messages.
+
+The tests are written using [ospec](https://github.com/MithrilJS/ospec), which has a very shallow learning curve, using two dedicated `.satisfies()` helpers (`m()` and `r()`) that should be self-documenting in context.
+
 ## Limitations and missing pieces
 
 - `compose-regexp` will not be able to mix `i`-flagged and non-`i`-flagged without native support for the scenario. Case-insensitive matching involves case folding both the pattern and the source string, and `compose-regexp` can't access the latter.
-
 
 ## License MIT
 
