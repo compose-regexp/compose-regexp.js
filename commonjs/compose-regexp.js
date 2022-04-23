@@ -430,7 +430,7 @@
 		var hasM = x.key.multiline;
 
 		if ($flagValidator.I != null && hasI !== $flagValidator.I) throw new SyntaxError("Can't combine i and non-i regexps: " + x.key)
-		if (!supportsLookBehind && $flagValidator.M != null && hasI !== $flagValidator.M) throw new SyntaxError("Can't combine m and non-m regexps: " + x.key)
+		if (!supportsLookBehind && $flagValidator.M != null && hasM !== $flagValidator.M) throw new SyntaxError("Can't combine m and non-m regexps: " + x.key)
 
 		$flagValidator.I = hasI;
 		$flagValidator.M = hasM;

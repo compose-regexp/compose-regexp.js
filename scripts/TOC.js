@@ -2,6 +2,8 @@ import fs from "fs"
 
 import {either, flags, lookAhead, lookBehind, namedCapture as tag, sequence, suffix} from '../compose-regexp.js'
 
+// My doc-toc replacement:
+
 const titlesMatcher = flags.add('g', either(
     sequence(
         /^/m,
@@ -36,15 +38,19 @@ const TOC = [...README.matchAll(titlesMatcher)]
     if (fence != null) inFence = !inFence
     return !(fence || wasInFence)
 })
+// remove the sections in the intro, which skip a
+// title level ==> (previousDepth - depth <= -2)
 .filter(({groups: {level}}) => {
     const depth = level.length
     if (previousDepth - depth < -1) return false
     previousDepth = depth
     return true
 })
+// Remove the TOC itself
 .filter(({groups:{content}}) => {
     return content !== 'TOC'
 })
+// slugify
 .map(({groups: {level, content}})=>{
     const indent = (level.length -1) * 4
     return `${' '.repeat(indent)}- ${slugify(content)}`
