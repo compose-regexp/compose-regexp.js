@@ -95,8 +95,8 @@ function getSource(x) {
 // combining (some of) this into a single function may give space
 // and perf gains, at the expense of maintainability
 
-var uProblemDefaultMatcher = /\\u\d{4}|\\x\d{2}|\\k<(.*?)>|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\[\^\]|\.|[\[]|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d?\})?)/g
-var uProblemCharClassMatcher = /\\u\d{4}|\\x\d{2}|\\c[A-Za-z]|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|[\]]/g
+var uProblemDefaultMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g
+var uProblemCharClassMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g
 
 export var groupNameMatcher = supportsU && new RegExp('^[_$\\p{ID_Start}][$\\p{ID_Continue}]*', 'u')
 
@@ -139,8 +139,8 @@ function hasUProblem(x) {
 		} else { // matcher === uProblemCharClassMatcher
 		// const [
 		//   match,
-		// 	 badRange,
 		// 	 escapedCharacter,
+		// 	 badRange,
 		// ] = result
 			if (result[0] === ']') use(uProblemDefaultMatcher)
 			else if (result[1] != null || result[2] != null) return true
@@ -329,7 +329,7 @@ var dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?:\
 function fixForFlags(x) {
 	var source = x.source
 	if($flagValidator.U && (x.kind === 'regexp' && !x.key.unicode || x.kind === 'result' && !metadata.get(x.key, 'unicode'))) {
-			if(hasUProblem(source)) throw new SyntaxError("Can't upgrade the RegExp to Unicode /"+ source +"/" + x.kind === 'regexp' ? x.key.flags : '')
+			if(hasUProblem(source)) throw new SyntaxError("Can't upgrade the RegExp to Unicode /"+ source + "/" + (x.kind === 'regexp' ? x.key.flags : ''))
 			x.source = promoteNonUnicodeToUnicode(source)
 	}
 	var inCClass = false

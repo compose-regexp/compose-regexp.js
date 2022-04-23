@@ -427,14 +427,34 @@ o.spec("flags", function () {
 			o(sequence(/a/u, /\x12/))
 			.satisfies(r(/a\x12/u))
 
+			o(sequence(/a/u, /\xab/))
+			.satisfies(r(/a\xab/u))
+
+			o(sequence(/a/u, /[\xab]/))
+			.satisfies(r(/a[\xab]/u))
+
 			o(sequence(/a/u, /[\x12]/))
 			.satisfies(r(/a[\x12]/u))
 
 			o(sequence(/a/u, /\u1234/))
 			.satisfies(r(/a\u1234/u))
 
+			o(sequence(/a/u, /\uabcd/))
+			.satisfies(r(/a\uabcd/u))
+
 			o(sequence(/a/u, /[\u1234]/))
 			.satisfies(r(/a[\u1234]/u))
+
+			o(sequence(/a/u, /[\uabcd]/))
+			.satisfies(r(/a[\uabcd]/u))
+
+			o(sequence(/a/u, /\./))
+			.satisfies(r(/a\./u))
+
+			o(sequence(/a/u, /\[^]/))
+			.satisfies(r(/a\[^\]/u))
+
+			
 
 		})
 
@@ -502,8 +522,8 @@ o.spec("flags", function () {
 
 				o(()=>sequence(/a/u, /[\w-x]/)).throws(SyntaxError)
 				o(()=>sequence(/a/u, /[x-\w]/)).throws(SyntaxError)
-
-				o(() => sequence(/a/u, /((?=())+)/)).throws(SyntaxError)
+				o(()=>sequence(/a/u, /[\w-\w]/)).throws(SyntaxError)
+				o(()=>sequence(/a/u, /((?=())+)/)).throws(SyntaxError)
 			} finally {
 				RegExp = R
 			}

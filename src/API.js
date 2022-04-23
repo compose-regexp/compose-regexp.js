@@ -59,7 +59,7 @@ export var notAhead = makeAssertion('(?!', 1)
 export var lookBehind = makeAssertion('(?<=', -1, throwIfNoLookBehind, "lookBehind")
 export var notBehind = makeAssertion('(?<!', -1, throwIfNoLookBehind, "notBehind")
 
-var suffixMatcher = /^(?:\+|\*|\?|\{(\d+),?(\d*)\})\??$/
+var suffixMatcher = /^(?:[+*?]|\{(\d+),?(\d*)\})\??$/
 
 var call = _suffix.call
 
