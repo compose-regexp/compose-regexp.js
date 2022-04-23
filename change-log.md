@@ -1,9 +1,28 @@
 # Change Log
 
+## v0.6.2
+
+***2022-04-22***
+
+### New features
+
+- `noBound(x)` matches where `bound(x)` doesn't and vice-versa. Think `/\B/` vs `/\b/`.
+- `charSet.invert(x)` will succeed where `x` doesn't and vice-versa. think `/[^a-z]/` vs `/[a-z]/`
+
+### Bug fixes
+
+- Fix a typo in the mixed m-flag detection code for legacy environments
+- added Compatibility and Contribution sections in the README
+
+## v0.6.1
+
+***2022-04-22***
+
+Doc tweaks for the npm README
 
 ## v0.6.0 (things are getting serious)
 
-***2022-04-06***
+***2022-04-22***
 
 This version revamps the core to provide better support for the `u` flag. The `ref()` story is also far more robust. `ref()` lets us introduce an `atomic()` helper that prevents the engine from backtracking.
 
@@ -20,6 +39,8 @@ This version revamps the core to provide better support for the `u` flag. The `r
 ### New features
 
 - `atomic(...exprs)` will create an atomic group that prevents backtracking into the expression once it has matched. ReDOS, begone! `atomic()` is direction sensitive, see below).
+- `bound(pattern)` generalizes the `/\b\` assertion to arbitrary character classes (or patterns, really)
+- `charSet.*()` methods let one do set arithmetics on character sets.
 - The combinators also accept as parameters, string, regexps, or arrays of parameters and functions that return parameters. An Arrays is treated like `sequence()`. Functions come in handy for look behind assertions.
 - `ref("label")` creates a named reference (`/\k<label>/`).
 - `namedCapture("label", ...)` returns (`/(?<label>...)/`)
