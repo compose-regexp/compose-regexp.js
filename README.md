@@ -101,7 +101,7 @@ Also, the matching engines are, by spec, required to backtrack on match failures
 
 It doesn't make regular grammars more powerful, they are still [fundamentally limited](https://en.wikipedia.org/w/index.php?title=Chomsky_hierarchy&oldid=762040114#The_hierarchy), but since they are ubiquitous, we may as well have better tooling to put them to use...
 
-`compose-regexp` is reasonably small (~3.6 KiB after compression), and doesn't have dependencies. You can use it as a plain dependency, or, for client-side apps, in a server-side script that generates the RegExps that you ship to the browsers.
+`compose-regexp` is reasonably small (~3.8 KiB after compression), and doesn't have dependencies. You can use it as a plain dependency, or, for client-side apps, in a server-side script that generates the RegExps that you ship to the browsers.
 
 ## Usage
 
