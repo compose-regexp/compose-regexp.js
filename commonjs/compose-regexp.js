@@ -71,6 +71,47 @@
 		}
 	};
 
+	//              /!\ DO NOT EDIT MANUALLY /!\
+
+
+	var captureMatcher = /\\[^]|\(\?[^<]|[\[\](]/g;
+
+
+	var dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?:\$\|\(\?=\[\\n\\r\\u2028\\u2029\]\)\)|\[|\]|\^|\$/g;
+
+
+	var groupNameMatcher = supportsU && new RegExp("^[_$\\p{ID_Start}][$\\p{ID_Continue}]*$", 'u');
+
+
+	var loneBracketMatcher = /\\.|\{\d+,?\d*\}|(\[|\]|\{|\})/g;
+
+
+	var mEndAnchor = /(?:$|(?=[\n\r\u2028\u2029]))/;
+
+
+	var mStartAnchor = /(?:^|(?<=[\n\r\u2028\u2029]))/;
+
+
+	var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\(\?:\$ \^d:(\d+),n:(\d+)\)/g;
+
+
+	var oneEscapeOrCharClassMatcher = /^(?:\\.|\[(?=((?:\\.|.)*?))\1\])$/;
+
+
+	var pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/;
+
+
+	var stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g;
+
+
+	var tokenMatcher = /(\\.)|[-()|\[\]]((?=\?<?[=!]))?/g;
+
+
+	var uProblemCharClassMatcher = /\\u(?:[0-9A-Fa-f]){4}|\\x(?:[0-9A-Fa-f]){2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g;
+
+
+	var uProblemDefaultMatcher = /\\u(?:[0-9A-Fa-f]){4}|\\x(?:[0-9A-Fa-f]){2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g;
+
 	// General notes:
 	// 
 	// 1. Most functions here take an `x` parameter, which is our internal representation
@@ -165,11 +206,6 @@
 	// combining (some of) this into a single function may give space
 	// and perf gains, at the expense of maintainability
 
-	var uProblemDefaultMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g;
-	var uProblemCharClassMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g;
-
-	var groupNameMatcher = supportsU && new RegExp('^[_$\\p{ID_Start}][$\\p{ID_Continue}]*', 'u');
-
 	// assesses if a non-unicode RegExp can be updated to unicode
 	// problems are invalid escapes, and quantifiers after
 	// a lookahead assertion
@@ -219,8 +255,6 @@
 		return false
 	}
 
-	var captureMatcher = /\\[^]|\(\?[^<]|[\[\](]/g;
-
 	var countCaptures = mdMemo('captureCount', function countCaptures(x) {
 		var count = 0, result;
 		captureMatcher.lastIndex = 0;
@@ -232,8 +266,6 @@
 		}
 		return count
 	});
-
-	var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\(\?:\$ \^d:(\d+),n:(\d+)\)/g;
 
 	var hasRefs = mdMemo('hasRefs', function hasRefs(x) {
 		var hasRefs = false, hasFinalRef = false, inCClass = false, result;
@@ -251,8 +283,6 @@
 		metadata.set(x.key, 'hasFinalRef', hasFinalRef);
 		return hasRefs
 	});
-
-	var tokenMatcher = /(\\.)|[-()|\[\]]((?=\?(?:=|!|<=|<!))?)/g;
 
 	// When composing expressions into a sequence, regexps that have a top-level
 	// choice operator must be wrapped in a non-capturing group. This function
@@ -297,10 +327,6 @@
 		return true
 	});
 
-	var oneEscapeOrCharClassMatcher = /^\\[^]$|^\[(?:\\[^]|[^\]])*\]$/;
-
-	var pEscapeMatcher = /^\\p\{[A-Z-a-z][A-Za-z=]*\}$/;
-
 	// Determine if a pattern can take a suffix operator or if a non-capturing group
 	// is needed around it.
 	// We can safely have false negatives (consequence: useless non-capturing groups)
@@ -334,23 +360,21 @@
 	// - - - - - - - - - - - - - - - - //
 
 
-	// Procedure that validate or update patterns when necessary
-
-	var loneBracketMatcher = /\{\d+,?\d*\}|\\[^]|\]|\[|\}/g;
+	// Procedure that validates or updates patterns when necessary
 
 	// fixes non-u regexps for unicode promotion, if needed
 	// - escapes lone brackets
 	// - updates the . to and [^] to explicit ranges that exclude the astral characters
 	function promoteNonUnicodeToUnicode (source) {
 		var inCClass = false;
-		return source.replace(loneBracketMatcher, function(match) {
-			if (match === '[') inCClass = true;
+		return source.replace(loneBracketMatcher, function(match, bracket) {
 			if (match === ']') {
 				if (inCClass) inCClass = false;
 				else return '\\]'
 			}
-			if (!inCClass) {
-				if(match === '}') return '\\}'
+			else if (!inCClass && bracket != null) {
+				if (bracket === '[') inCClass = true;
+				else return '\\' + bracket
 			}
 			return match
 		})
@@ -393,7 +417,6 @@
 		}
 	}
 
-	var dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?:\$\|\(\?=\[\\n\\r\\u2028\\u2029\]\)\)|\[|\]|\^|\$/g;
 	function fixForFlags(x) {
 		var source = x.source;
 		if($flagValidator.U && (x.kind === 'regexp' && !x.key.unicode || x.kind === 'result' && !metadata.get(x.key, 'unicode'))) {
@@ -405,8 +428,8 @@
 			if (!inCClass) {
 				if (match === '[') inCClass = true;
 				return (x.key.dotAll && match === '.') ? '[^]' 
-				: (x.key.multiline && match === '^'&& supportsLookBehind) ? '(?:^|(?<=[\\n\\r\\u2028\\u2029]))'
-				: (x.key.multiline && match === '$' && supportsLookBehind) ? '(?:$|(?=[\\n\\r\\u2028\\u2029]))'
+				: (x.key.multiline && match === '^'&& supportsLookBehind) ? mStartAnchor.source
+				: (x.key.multiline && match === '$' && supportsLookBehind) ? mEndAnchor.source
 				: match
 			} else {
 				if (match === ']') inCClass = false;
@@ -541,8 +564,6 @@
 			open: '(?:'
 		})
 	}
-
-	var stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g;
 
 	function handleOtherTypes (x) {
 		if (typeof x === 'number' || typeof x === 'string') return {

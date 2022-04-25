@@ -535,6 +535,8 @@ o.spec("flags", function () {
 
 			o(sequence(/}/, /a/u)).satisfies(r(/\}a/u))
 
+			o(sequence(/{/, /a/u)).satisfies(r(/\{a/u))
+
 			o(sequence(/a{1}/, /a/u)).satisfies(r(/a{1}a/u))
 
 			o(sequence(/a{1,}/, /a/u)).satisfies(r(/a{1,}a/u))
@@ -973,7 +975,7 @@ o.spec("other functions", function() {
 		const bcRef = {ok: ['b', 'c'], ko: ['a', 'd']}
 
 		o(/[bc]/).satisfies(m(bcRef))
-		o(not_bc).notSatisfies(m(bcRef))
+		o(not_bc).satisfies(m(m.invert(bcRef)))
 
 
 		const theseAstralChars = /[\u{80000}-\u{9ffff}]/u
@@ -984,7 +986,7 @@ o.spec("other functions", function() {
 		}
 
 		o(theseAstralChars).satisfies(m(astralRef))
-		o(notTheseAstralChars).notSatisfies(m(astralRef))
+		o(notTheseAstralChars).satisfies(m(m.invert(astralRef)))
 	})
 })
 

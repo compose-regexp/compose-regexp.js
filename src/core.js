@@ -1,5 +1,6 @@
 
-import {allFlags, supportsLookBehind, hasOwn, identity, map, RegExpRef, store, supportsU, unescape} from "./utils.js"
+import {allFlags, supportsLookBehind, hasOwn, identity, map, RegExpRef, store, supportsU, unescape} from './utils.js'
+import {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, mEndAnchor, mStartAnchor, numRefMatcher, oneEscapeOrCharClassMatcher, pEscapeMatcher, stringNormalizerMatcher, tokenMatcher, uProblemCharClassMatcher, uProblemDefaultMatcher} from './regexps.js'
 
 // General notes:
 // 
@@ -95,11 +96,6 @@ function getSource(x) {
 // combining (some of) this into a single function may give space
 // and perf gains, at the expense of maintainability
 
-var uProblemDefaultMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g
-var uProblemCharClassMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g
-
-export var groupNameMatcher = supportsU && new RegExp('^[_$\\p{ID_Start}][$\\p{ID_Continue}]*', 'u')
-
 // assesses if a non-unicode RegExp can be updated to unicode
 // problems are invalid escapes, and quantifiers after
 // a lookahead assertion
@@ -149,8 +145,6 @@ function hasUProblem(x) {
 	return false
 }
 
-var captureMatcher = /\\[^]|\(\?[^<]|[\[\](]/g
-
 var countCaptures = mdMemo('captureCount', function countCaptures(x) {
 	var count = 0, inCClass = false, result
 	captureMatcher.lastIndex = 0
@@ -164,8 +158,6 @@ var countCaptures = mdMemo('captureCount', function countCaptures(x) {
 	}
 	return count
 })
-
-var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\(\?:\$ \^d:(\d+),n:(\d+)\)/g
 
 var hasRefs = mdMemo('hasRefs', function hasRefs(x) {
 	var hasRefs = false, hasFinalRef = false, inCClass = false, result
@@ -183,8 +175,6 @@ var hasRefs = mdMemo('hasRefs', function hasRefs(x) {
 	metadata.set(x.key, 'hasFinalRef', hasFinalRef)
 	return hasRefs
 })
-
-var tokenMatcher = /(\\.)|[-()|\[\]]((?=\?(?:=|!|<=|<!))?)/g
 
 // When composing expressions into a sequence, regexps that have a top-level
 // choice operator must be wrapped in a non-capturing group. This function
@@ -229,10 +219,6 @@ export var isOneGroupOrAssertion = mdMemo('isOneGroupOrAssertion', function isOn
 	return true
 })
 
-var oneEscapeOrCharClassMatcher = /^\\[^]$|^\[(?:\\[^]|[^\]])*\]$/
-
-var pEscapeMatcher = /^\\p\{[A-Z-a-z][A-Za-z=]*\}$/
-
 // Determine if a pattern can take a suffix operator or if a non-capturing group
 // is needed around it.
 // We can safely have false negatives (consequence: useless non-capturing groups)
@@ -266,23 +252,21 @@ export function needsWrappingForQuantifier(x) {
 // - - - - - - - - - - - - - - - - //
 
 
-// Procedure that validate or update patterns when necessary
-
-var loneBracketMatcher = /\{\d+,?\d*\}|\\[^]|\]|\[|\}/g
+// Procedure that validates or updates patterns when necessary
 
 // fixes non-u regexps for unicode promotion, if needed
 // - escapes lone brackets
 // - updates the . to and [^] to explicit ranges that exclude the astral characters
 function promoteNonUnicodeToUnicode (source) {
 	var inCClass = false
-	return source.replace(loneBracketMatcher, function(match) {
-		if (match === '[') inCClass = true
+	return source.replace(loneBracketMatcher, function(match, bracket) {
 		if (match === ']') {
 			if (inCClass) inCClass = false
 			else return '\\]'
 		}
-		if (!inCClass) {
-			if(match === '}') return '\\}'
+		else if (!inCClass && bracket != null) {
+			if (bracket === '[') inCClass = true
+			else return '\\' + bracket
 		}
 		return match
 	})
@@ -325,7 +309,6 @@ function $$_fixRefs(initialOffset) {
 	}
 }
 
-var dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?:\$\|\(\?=\[\\n\\r\\u2028\\u2029\]\)\)|\[|\]|\^|\$/g
 function fixForFlags(x) {
 	var source = x.source
 	if($flagValidator.U && (x.kind === 'regexp' && !x.key.unicode || x.kind === 'result' && !metadata.get(x.key, 'unicode'))) {
@@ -337,8 +320,8 @@ function fixForFlags(x) {
 		if (!inCClass) {
 			if (match === '[') inCClass = true
 			return (x.key.dotAll && match === '.') ? '[^]' 
-			: (x.key.multiline && match === '^'&& supportsLookBehind) ? '(?:^|(?<=[\\n\\r\\u2028\\u2029]))'
-			: (x.key.multiline && match === '$' && supportsLookBehind) ? '(?:$|(?=[\\n\\r\\u2028\\u2029]))'
+			: (x.key.multiline && match === '^'&& supportsLookBehind) ? mStartAnchor.source
+			: (x.key.multiline && match === '$' && supportsLookBehind) ? mEndAnchor.source
 			: match
 		} else {
 			if (match === ']') inCClass = false
@@ -473,8 +456,6 @@ function wrapIfTopLevelDisjunction(x) {
 		open: '(?:'
 	})
 }
-
-var stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g
 
 function handleOtherTypes (x) {
 	if (typeof x === 'number' || typeof x === 'string') return {

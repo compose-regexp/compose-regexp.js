@@ -106,6 +106,8 @@ export function m(spec) {
 	}
 }
 
+m.invert = x => ({ok: x.ko, ko: x.ok})
+
 let c = 0
 const alreadyPrinted = Object.create(null)
 global.TODO = (...items) => {

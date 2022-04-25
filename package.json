@@ -13,12 +13,13 @@
 		}
 	},
 	"scripts": {
-		"test": "ospec",
-		"build": "gosub rollup && gosub uglify && gosub gzip && gosub brotli && gosub toc && ls -l dist/*.br",
+		"build": "gosub build-regexp && gosub rollup && gosub uglify && gosub gzip && gosub brotli && gosub build-toc && ls -l dist/*.br",
 		"brotli": "brotli -f -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js",
 		"gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
+		"build-regexp": "node scripts/build-regexp.js",
+		"build-toc": "node scripts/build-toc.js",
 		"rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
-		"toc": "node scripts/toc.js",
+		"test": "gosub build-regexp && ospec",
 		"uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js"
 	},
 	"repository": {

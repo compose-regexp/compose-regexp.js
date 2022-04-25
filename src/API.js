@@ -1,7 +1,7 @@
 import {slice, supportsLookBehind, supportsU, unescape} from './utils.js'
 
-import {assemble, decorate, $direction, finalize, flagsMatcher, $flagValidator, groupNameMatcher, metadata, needsWrappingForQuantifier, $$_resetRefCapsAndFlags} from './core.js'
-
+import {assemble, decorate, $direction, finalize, flagsMatcher, $flagValidator, metadata, needsWrappingForQuantifier, $$_resetRefCapsAndFlags} from './core.js'
+import {groupNameMatcher} from './regexps.js'
 
 //- - - - - - - - - - -//
 // - - ~ - -   - -   - //
