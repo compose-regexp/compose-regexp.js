@@ -1,5 +1,23 @@
 # Change Log
 
+
+
+## v0.6.4
+
+***2022-04-25***
+
+### Bug fixes
+
+- Fix another bug when upgrading non-u regexps to u
+
+## v0.6.3
+
+***2022-04-24***
+
+### Bug fixes
+
+- Better logic to upgrade non-u regexp to unicode
+
 ## v0.6.2
 
 ***2022-04-22***
