@@ -454,6 +454,8 @@ Returns a RegExp that will match `sequence(...exprs)`, but into which the engine
 
 `atomic()` adds an unnamed capturing group. There's no way around it as of until JS adds support for atomic groups. You'd be better off using named capturing groups if you want to extract sub-matches, they are easier the handle than match indices which go all over the place anyway when you compose RegExps. See the [atomic matching](#atomic-matching) section for more detals.
 
+RegExps with captures have custom behavior when using `someString.split(regexp)`, which probably isn't what you want (the captures are inserted into the resulting arrays, with `undefined` for the capturing groups that didn't match). Avoid `atomic()` for that purpose.
+
 ----
 
 #### bound(...exprs) : RegExp
