@@ -734,6 +734,24 @@ o.spec("refs", function () {
 
 	})
 
+	o("look around assertions and non-capturing groups are ignored", function() {
+		o(sequence(/(?=)/, /()\1/))
+		.satisfies(r(/(?=)()\1/))
+
+		o(sequence(/(?!)/, /()\1/))
+		.satisfies(r(/(?!)()\1/))
+
+		o(sequence(/(?<=)/, /()\1/))
+		.satisfies(r(/(?<=)()\1/))
+
+		o(sequence(/(?<!)/, /()\1/))
+		.satisfies(r(/(?<!)()\1/))
+
+		o(sequence(/(?:)/, /()\1/))
+		.satisfies(r(/(?:)()\1/))
+
+	})
+
 	o("refs in final position are handled properly", function() {
 		o(sequence(/(a)\1/, "2"))
 		.satisfies(r(/(a)\1(?:)2/))
@@ -1042,98 +1060,6 @@ o.spec("bounds", function() {
 
 		o(numNoBound.test("10aa")).equals(true)
 
-	})
-})
-
-o.spec("integration", function() {
-	o("string", function() {
-		const tag = namedCapture
-		const str = atomic(sequence(
-			capture(either("'", '"')),
-			suffix("*?", either(
-				["\\", /[^]/],
-				/./
-			)),
-			ref(1)
-		))
-
-		let result
-
-		o(str).satisfies(r(/(?=(('|")(?:\\[^]|.)*?\2))\1/))
-
-		o(str.test('""')).equals(true)
-
-		result = capture(str).exec('""')
-		o(Array.isArray(result)).equals(true)
-		o(result).deepEquals(Object.assign([ '""', '""', '""', '"'], {index: 0, input:'""', groups: undefined}))
-
-		result = tag("string", str).exec('""')
-		o(result)
-		.deepEquals(Object.assign(
-			[ '""', '""', '""', '"'],
-			{
-				index: 0,
-				input:'""',
-				groups: nullProto({string: '""'})
-			}
-		))
-
-		const ws = atomic(suffix("+", either(
-			/\s/,
-			["/*", suffix("*?", /[^]/), '*/'],
-			["//", /.*?\n/]
-		)))
-
-
-		const e = flags.add("g",
-			either(
-				tag("whiteSpace", ws),
-				tag("url", atomic(["url(", suffix("?", ws), str, suffix("?", ws), ")"])),
-				tag("string", str),
-				tag("error", /[^]/)
-			)
-		)
-
-		e.lastIndex = 0
-		o(e.test('"sdfdjs"')).equals(true)
-
-		e.lastIndex = 0
-		o(e.test("'sdfdsf'")).equals(true)
-
-		e.lastIndex = 0
-		o(e.test('""')).equals(true)
-
-		e.lastIndex = 0
-		o(e.test("''")).equals(true)
-
-		let source = `"ababa" //foo
-
-		/* jojo
-		*/
-		url( "dada" )
-		url("dada")
-		"
-		`
-		e.lastIndex = 0
-
-		while((result = e.exec(source)) && !(result.groups.error )){
-			// console.log({result})
-		}
-		o(result.groups.error).equals('"')
-		o(result.index).equals(62)
-
-		source = `"ababa" //foo
-
-		/* jojo
-		*/
-		url( "dada" )
-		url("dada")
-		//"
-		`
-		e.lastIndex = 0
-
-		while((result = e.exec(source)) && !(result.groups.error)){}
-		o(result).equals(null)
 	})
 })
 

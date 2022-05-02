@@ -16,7 +16,7 @@ const output = {}
 
 output.captureMatcher = flags.add('g', either(
     ['\\', /[^]/],
-    ['(?', /[^<]/],
+    ['(?', /:|<?[=!]/],
     /[\[\](]/
 ))
 

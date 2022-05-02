@@ -17,7 +17,7 @@ import {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, m
 import {supportsU} from './utils.js'
 
 
-var captureMatcher = /\\[^]|\(\?[^<]|[\[\](]/g
+var captureMatcher = /\\[^]|\(\?(?::|<?[=!])|[\[\](]/g
 
 
 var dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?:\$\|\(\?=\[\\n\\r\\u2028\\u2029\]\)\)|\[|\]|\^|\$/g
