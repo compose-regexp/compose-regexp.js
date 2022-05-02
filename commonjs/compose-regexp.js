@@ -74,7 +74,7 @@
 	//              /!\ DO NOT EDIT MANUALLY /!\
 
 
-	var captureMatcher = /\\[^]|\(\?[^<]|[\[\](]/g;
+	var captureMatcher = /\\[^]|\(\?(?::|<?[=!])|[\[\](]/g;
 
 
 	var dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?:\$\|\(\?=\[\\n\\r\\u2028\\u2029\]\)\)|\[|\]|\^|\$/g;
