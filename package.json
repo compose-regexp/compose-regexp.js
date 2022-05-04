@@ -1,6 +1,6 @@
 {
 	"name": "compose-regexp",
-	"version": "0.6.8",
+	"version": "0.6.9",
 	"description": "A set of functions to build and compose complex regular expressions",
 	"type": "module",
 	"main": "commonjs/compose-regexp.js",
@@ -20,8 +20,8 @@
 		"compress-brotli": "brotli -f -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js",
 		"compress-uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
 		"prepublishOnly": "git status --porcelain | node scripts/prepublish.js",
-		"publish":"gosub build && gosub publish-actually",
-		"publish-actually": "NPM_PUBLISH=1 npm publish",
+		"release":"gosub build && gosub release-actually",
+		"release-actually": "NPM_PUBLISH=1 npm publish",
 		"rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
 		"test": "gosub build-regexp && ospec"
 	},
@@ -43,7 +43,7 @@
 	},
 	"homepage": "https://github.com/pygy/compose-regexp.js#readme",
 	"devDependencies": {
-		"compose-regexp": "0.6.7",
+		"compose-regexp": "0.6.8",
 		"gosub": "1.0.0",
 		"ospec": "^4.1.1",
 		"rollup": "^2.70.1",

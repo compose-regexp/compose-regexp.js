@@ -2,6 +2,14 @@
 
 
 
+## v0.6.9
+
+*2022-05-04*
+
+### Improvements
+
+- Tweak the back reference thunk format
+
 ## v0.6.8
 
 *2022-05-04*
