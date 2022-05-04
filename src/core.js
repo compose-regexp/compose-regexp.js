@@ -291,7 +291,7 @@ function $$_fixRefs(initialOffset) {
 							return '\\' + String(fixedRefIndex)
 						} else if (depth != null) {
 							if (depth === '0') return '\\' + String(thunkIndex)
-							else return '(?:$ ^d:' + (Number(depth) -1) + ',n:' + thunkIndex + ')'
+							else return '$d:' + (Number(depth) -1) + ',n:' + thunkIndex + '^'
 						}
 					}
 					if (match === '[') inCClass = true

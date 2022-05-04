@@ -902,9 +902,9 @@ o.spec("backwards and atoms", function() {
 
 		o(bw).satisfies(r(/\1(?<=())/))
 
-		o(fwr).satisfies(r(/(?:$ ^d:0,n:1)/))
+		o(fwr).satisfies(r(/$d:0,n:1^/))
 
-		o(bwr).satisfies(r(/(?:$ ^d:0,n:1)/))
+		o(bwr).satisfies(r(/$d:0,n:1^/))
 
 	})
 

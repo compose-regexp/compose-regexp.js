@@ -43,7 +43,7 @@ output.numRefMatcher = flags.add('g', either(
     ['\\', /[^1-9]/],
     /[\[\]]/,
     ['\\', capture(suffix([1,2], /\d/))],
-    ['(?:$ ^d:', capture(/\d+/), ',n:', capture(/\d+/), ')']
+    ['$d:', capture(/\d+/), ',n:', capture(/\d+/), '^']
 ))
 
 output.oneEscapeOrCharClassMatcher = sequence(

@@ -373,7 +373,7 @@ See the [back references](#back-references) section below for a detailed descrip
 /\k<label>/
 
 > ref(1)
-/($ ^d:0,n:1)/
+/$d:0,n:1^/
 
 > sequence(capture(/./), ref(1))
 /(.)\1/
