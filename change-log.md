@@ -2,9 +2,33 @@
 
 
 
+## v0.6.7
+
+*2022-05-04*
+
+### Improvements
+
+- More efficient and terser set intersection
+
+## v0.6.6
+
+*2022-05-02*
+
+### Bug fixes
+
+- Publish AMD and artefacts
+
+## v0.6.5
+
+*2022-05-02*
+
+### Bug fixes
+
+-  Ignore look behind assertions when counting captures
+
 ## v0.6.4
 
-***2022-04-25***
+*2022-04-25*
 
 ### Bug fixes
 
@@ -12,7 +36,7 @@
 
 ## v0.6.3
 
-***2022-04-24***
+*2022-04-24*
 
 ### Bug fixes
 
@@ -20,7 +44,7 @@
 
 ## v0.6.2
 
-***2022-04-22***
+*2022-04-22*
 
 ### New features
 
@@ -34,13 +58,13 @@
 
 ## v0.6.1
 
-***2022-04-22***
+*2022-04-22*
 
 Doc tweaks for the npm README
 
 ## v0.6.0 (things are getting serious)
 
-***2022-04-22***
+*2022-04-22*
 
 This version revamps the core to provide better support for the `u` flag. The `ref()` story is also far more robust. `ref()` lets us introduce an `atomic()` helper that prevents the engine from backtracking.
 

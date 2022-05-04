@@ -1,6 +1,6 @@
 {
 	"name": "compose-regexp",
-	"version": "0.6.6",
+	"version": "0.6.7",
 	"description": "A set of functions to build and compose complex regular expressions",
 	"type": "module",
 	"main": "commonjs/compose-regexp.js",
@@ -40,7 +40,7 @@
 	},
 	"homepage": "https://github.com/pygy/compose-regexp.js#readme",
 	"devDependencies": {
-		"compose-regexp": "0.6.5",
+		"compose-regexp": "0.6.6",
 		"gosub": "1.0.0",
 		"ospec": "^4.1.1",
 		"rollup": "^2.70.1",
