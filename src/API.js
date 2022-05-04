@@ -185,7 +185,7 @@ export function atomic() {
 
 var allU = supportsU && new RegExp('[^]', 'u')
 function csDiff(a, b) {return sequence(notAhead(b), a)}
-function csInter(a, b) {return sequence(notAhead(csDiff(a, b)), a)}
+function csInter(a, b) {return sequence(lookAhead(b), a)}
 function csComplement(a) {return csDiff((supportsU && a.unicode) ? allU : /[^]/, a)}
 
 export var charSet = {
