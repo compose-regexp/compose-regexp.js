@@ -2,6 +2,12 @@
 
 
 
+## v0.6.8
+
+*2022-05-04*
+
+Dummy release to test the npm publish script
+
 ## v0.6.7
 
 *2022-05-04*

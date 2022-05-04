@@ -13,14 +13,17 @@
 		}
 	},
 	"scripts": {
-		"build": "gosub build-regexp && gosub rollup && gosub uglify && gosub gzip && gosub brotli && gosub build-toc && ls -l dist/*.br",
-		"brotli": "brotli -f -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js",
-		"gzip": "cat dist/compose-regexp.min.js | gzip -9 > dist/compose-regexp.min.js.gz",
+		"build": "gosub build-regexp && ospec && gosub rollup && gosub compress && gosub build-toc && ls -l dist/*.br",
 		"build-regexp": "node scripts/build-regexp.js",
 		"build-toc": "node scripts/build-toc.js",
+		"compress": "gosub compress-uglify && gosub compress-brotli",
+		"compress-brotli": "brotli -f -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js",
+		"compress-uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
+		"prepublishOnly": "git status --porcelain | node scripts/prepublish.js",
+		"publish":"gosub build && gosub publish-actually",
+		"publish-actually": "NPM_PUBLISH=1 npm publish",
 		"rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
-		"test": "gosub build-regexp && ospec",
-		"uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js"
+		"test": "gosub build-regexp && ospec"
 	},
 	"repository": {
 		"type": "git",
