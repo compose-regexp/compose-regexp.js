@@ -1,6 +1,6 @@
 {
 	"name": "compose-regexp",
-	"version": "0.6.9",
+	"version": "0.6.10",
 	"description": "A set of functions to build and compose complex regular expressions",
 	"type": "module",
 	"main": "commonjs/compose-regexp.js",
@@ -13,15 +13,15 @@
 		}
 	},
 	"scripts": {
-		"build": "gosub build-regexp && ospec && gosub rollup && gosub compress && gosub build-toc && ls -l dist/*.br",
+		"build": "gosub build-regexp && gosub rollup && gosub compress && gosub build-toc && ls -l dist/*.br",
 		"build-regexp": "node scripts/build-regexp.js",
 		"build-toc": "node scripts/build-toc.js",
 		"compress": "gosub compress-uglify && gosub compress-brotli",
 		"compress-brotli": "brotli -f -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js",
 		"compress-uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
-		"prepublishOnly": "git status --porcelain | node scripts/prepublish.js",
-		"release":"gosub build && gosub release-actually",
-		"release-actually": "NPM_PUBLISH=1 npm publish",
+		"prepublishOnly": "node --no-warnings scripts/prepublish.js",
+		"postpublish": "node ./scripts/postpublish.js && npm install && gosub test",
+		"release":"NPM_PUBLISH=1 npm publish",
 		"rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
 		"test": "gosub build-regexp && ospec"
 	},
@@ -43,8 +43,8 @@
 	},
 	"homepage": "https://github.com/pygy/compose-regexp.js#readme",
 	"devDependencies": {
-		"compose-regexp": "0.6.8",
-		"gosub": "1.0.0",
+		"compose-regexp": "0.6.9",
+		"gosub": "1.1.0",
 		"ospec": "^4.1.1",
 		"rollup": "^2.70.1",
 		"uglify-js": "^2.6.1"

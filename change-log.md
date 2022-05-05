@@ -2,6 +2,12 @@
 
 
 
+## v0.6.10
+
+*2022-05-04*
+
+Another dummy release to test the npm postpublish script
+
 ## v0.6.9
 
 *2022-05-04*
