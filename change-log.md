@@ -2,6 +2,12 @@
 
 
 
+## v0.6.12
+
+*2022-05-05*
+
+Dummy release to debug NPM issue
+
 ## v0.6.11
 
 *2022-05-05*

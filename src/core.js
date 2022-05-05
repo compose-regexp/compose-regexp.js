@@ -272,7 +272,6 @@ function promoteNonUnicodeToUnicode (source) {
 	})
 }
 
-
 // numeric backrefs must be updated for proper composition
 // this ensures that sequence(/()\1/, /()\1/) becomes /()\1()\2/
 function $$_fixRefs(initialOffset) {
