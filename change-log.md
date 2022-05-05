@@ -2,9 +2,17 @@
 
 
 
+## v0.6.11
+
+*2022-05-05*
+
+### Bug fixes
+
+- Fix the postinstall script
+
 ## v0.6.10
 
-*2022-05-04*
+*2022-05-05*
 
 Another dummy release to test the npm postpublish script
 
