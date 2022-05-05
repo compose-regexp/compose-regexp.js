@@ -1,5 +1,4 @@
-import chp from 'child_process'
-import { stringify } from 'querystring'
+import {spawn} from 'child_process'
 
 function childPromise(child) {
 	const err = []
@@ -10,7 +9,10 @@ function childPromise(child) {
 	}
 	return Object.assign(new Promise(function (fulfill, _reject) {
 
-		const reject = e => _reject(Object.assign(new Error("Problem in child process"), e))
+		const reject = e => _reject(Object.assign(new Error("Problem in child process"), e, {
+			stderr: err.join(''),
+			stdout: out.join(''),
+		}))
 
 		const handler = (code, signal) => (code === 0 ? fulfill : reject)({
 			code,
@@ -22,7 +24,7 @@ function childPromise(child) {
 		child.on("close", handler)
 		child.on("exit", handler)
 		child.on("error", err => {
-			reject({error: err.stack})
+			reject({error: err})
 			if (child.exitCode == null) child.kill('SIGTERM')
 			setTimeout(()=>{
 				if (child.exitCode == null) child.kill('SIGKILL')
@@ -37,17 +39,17 @@ function childPromise(child) {
 // access to the child
 // The promise resolves to an object with this structure
 // {
-// 	code? // exit code
-// 	signal? // signal recieved
+// 	code? // exit code, if any
+// 	signal? // signal recieved, if any
 // 	stdout: string,
 // 	stderr: string,
-// 	error?:  // the stack of the error on rejection
+//  error?: the error caught, if any
 // }
 // On rejection, the Error is augmented with the same fields
 
 export const command = (cmd, options = {}) => (...params) => {
 	console.log('$ ' + [cmd, ...params].join(' '))
-	return childPromise(chp.spawn(cmd, params, {
+	return childPromise(spawn(cmd, params, {
 		stdio: 'inherit',
 		env: process.env,
 		cwd: process.cwd(),
@@ -56,7 +58,7 @@ export const command = (cmd, options = {}) => (...params) => {
 }
 
 
-export const readFromCmd = (cmd, options) => (...params) => childPromise(chp.spawn(cmd, params, {
+export const readFromCmd = (cmd, options) => (...params) => childPromise(spawn(cmd, params, {
 	env: process.env,
 	cwd: process.cwd(),
 	...options

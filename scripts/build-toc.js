@@ -18,9 +18,6 @@ const titlesMatcher = flags.add('g', either(
 const tocMatcher = sequence(lookBehind('<!-- START toc -->\n'), /[^]*?/, lookAhead('<!-- END toc -->'))
 
 const README = fs.readFileSync('./README.md', {encoding: 'utf-8'}).toString()
-// console.log(README)
-
-// console.log(titles.exec(README))
 
 // /[^-\p{ID_Continue}]/gu is meant to strip Emoji, it may be too broad, or too narrow a filter.
 // We're dealing with ASCII in compose-regexp so this is overkill for us... What we have seems
