@@ -22,4 +22,4 @@ await npm('run', 'test')
 
 await git('commit', '-am', `"bump self-dep to ${tag}"`)
 
-await git('commit', 'push')
+await git('push', 'origin', 'main')
