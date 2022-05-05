@@ -16,6 +16,8 @@ pkg.devDependencies['compose-regexp'] = version
 
 fs.writeFileSync('./package.json', JSON.stringify(pkg, null, '\t'), 'utf-8')
 
+await npm('cache', 'clean', '--force')
+
 await npm('i')
 
 await npm('run', 'test')

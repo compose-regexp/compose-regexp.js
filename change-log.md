@@ -2,19 +2,13 @@
 
 
 
-## v0.6.12
-
-*2022-05-05*
-
-Dummy release to debug NPM issue
-
-## v0.6.11
+## v0.6.11, v0.6.12, v0.6.13
 
 *2022-05-05*
 
 ### Bug fixes
 
-- Fix the postinstall script
+- Fix the postinstall script and other NPM-related shenanigans
 
 ## v0.6.10
 
