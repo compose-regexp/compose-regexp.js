@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { command, readFromCmd } from './utils.js'
+import { command } from './utils.js'
 import pkg from '../package.json' assert { type: 'json' }
 
 const git = command('git')
@@ -10,7 +10,7 @@ const tag = 'v' + version
 
 await git('tag', tag)
 
-await git('push', '--flags')
+await git('push', '--tags')
 
 pkg.devDependencies['compose-regexp'] = version
 

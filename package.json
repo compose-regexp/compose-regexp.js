@@ -21,7 +21,7 @@
 		"compress-uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
 		"prepublishOnly": "node --no-warnings scripts/prepublish.js",
 		"postpublish": "node ./scripts/postpublish.js && npm install && gosub test",
-		"release":"NPM_PUBLISH=1 npm publish",
+		"release": "NPM_PUBLISH=1 npm publish",
 		"rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
 		"test": "gosub build-regexp && ospec"
 	},
@@ -43,7 +43,7 @@
 	},
 	"homepage": "https://github.com/pygy/compose-regexp.js#readme",
 	"devDependencies": {
-		"compose-regexp": "0.6.9",
+		"compose-regexp": "0.6.10",
 		"gosub": "1.1.0",
 		"ospec": "^4.1.1",
 		"rollup": "^2.70.1",
