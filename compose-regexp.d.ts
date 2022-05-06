@@ -1,15 +1,102 @@
-export type Param = string | RegExp | [Param] | (() => Param)
 
-export type Quantifier = '*' | '+' | '?' | '*?' | '+?' | '??' | number | [number] | {'0': number, length: 2} | [number, number]
+export type Param = string | RegExp | [Param] | (() => Param)
 
 export declare function either(...x: [Param]) : RegExp
 export declare function sequence(...x: [Param]) : RegExp
-export declare function suffix(s: Quantifier, ...x: [Param]) : RegExp
+
 export declare function maybe(...x: [Param]) : RegExp
-export interface flags {
-    add(flags: string, ...x: [Param]) : RegExp
+
+// Machinery for the quantifiers
+
+type Interrogation = '' | '?'
+
+type BracketQuantifier = `{${number}}${Interrogation}` | `{${number},}${Interrogation}` | `{${number},${number}}${Interrogation}`
+
+type Dot = `${string}.${string}`
+type E = `${string}e${string}` | `${string}E${string}`
+type Minus = `${string}-${string}`
+
+type Subtract<T, U> = T & Exclude<T, U>
+
+type SimpleQuantifier = '*' | '+' | '?' | '*?' | '+?' | '??'
+
+export declare function suffix<T extends BracketQuantifier>(
+    s: SimpleQuantifier | Subtract<T, Dot | E | Minus>,
+    ...x: [Param]
+) : RegExp
+
+// Machinery for the flags
+// Based on https://glitch.com/~efficacious-valley-repair 's output for
+// `/^[dgimsuy]{6}$/`
+// That glitch is the work of https://github.com/AnyhowStep
+
+type Head<StrT extends string> = StrT extends `${infer HeadT}${string}` ? HeadT : never;
+
+type Tail<StrT extends string> = StrT extends `${string}${infer TailT}` ? TailT : never;
+
+interface Dfa {
+    startState : string,
+    acceptStates : string,
+    transitions : Record<string, Record<string, string>>,
+}
+type AcceptsImpl<
+    DfaT extends Dfa,
+    StateT extends string,
+    InputT extends string
+> =
+    InputT extends "" ?
+    (StateT extends DfaT["acceptStates"] ? true : false) :
+    AcceptsImpl<
+        DfaT,
+        DfaT["transitions"][StateT][Head<InputT>],
+        Tail<InputT>
+    >;
+
+type Accepts<DfaT extends Dfa, InputT extends string> = AcceptsImpl<DfaT, DfaT["startState"], InputT>;
+
+type DGIMSUY<Next> = 
+    & Record<"d"|"g"|"i"|"m"|"s"|"u"|"y", Next>
+    & Record<string, "fail">
+
+interface Flags {
+    startState : "0",
+    acceptStates : "0"|"1"|"2"|"3"|"4"|"5"|"6",
+    transitions : {
+        "0": DGIMSUY<"1">,
+        "1": DGIMSUY<"2">,
+        "2": DGIMSUY<"3">,
+        "3": DGIMSUY<"4">,
+        "4": DGIMSUY<"5">,
+        "5": DGIMSUY<"6">,
+        "6": Record<string, "fail">,
+        "fail": Record<string, "fail">,
+    },
 }
 
+type InLanguage_0 = Accepts<Flags, "df"> /** Insert your string here */
+
+type CheckType<F extends Flags, Str extends string> = Accepts<F, Str> extends true ? Str : [`Invalid flags: ${Str}`];
+
+type TwoFlags = 
+    | `${string}d${string}d${string}`
+    | `${string}g${string}g${string}`
+    | `${string}i${string}i${string}`
+    | `${string}m${string}m${string}`
+    | `${string}s${string}s${string}`
+    | `${string}u${string}u${string}`
+    | `${string}y${string}y${string}`
+    | `${string}g${string}y${string}`
+    | `${string}y${string}g${string}`
+
+type Subtract<T, U> = T & Exclude<T, U>
+
+
+export interface flags<Str extends string>{
+    add(
+        flags: Subtract<CheckType<Flags, Str>, TwoFlags>,
+        ...x: [Param]
+    ) : RegExp
+}
 
 export declare function capture(...x: [Param]) : RegExp
 export declare function namedCapture(label: string, ...x: [Param]) : RegExp
