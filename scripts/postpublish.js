@@ -17,13 +17,20 @@ await git('push', '--tags')
 pkg.devDependencies['compose-regexp'] = version
 
 writeFileSync('./package.json', JSON.stringify(pkg, null, '\t'), 'utf-8')
+let success = false
+do {
+	await npm('cache', 'clean', '--force')
 
-await npm('cache', 'clean', '--force')
-
-// give the npm servers some time
-await sleep(1)
-
-await npm('i')
+	// give the npm servers some time
+	await sleep(1)
+	
+	try { 
+		await npm('i')
+		success = true
+	} catch(e) {
+		console.log("retrying to fetch the latest version")
+	}
+} while (!success)
 
 await npm('run', 'test')
 
