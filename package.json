@@ -3,15 +3,17 @@
 	"version": "0.6.14",
 	"description": "A set of functions to build and compose complex regular expressions",
 	"type": "module",
-	"main": "commonjs/compose-regexp.js",
-	"module": "compose-regexp.js",
-	"jsnext:main": "compose-regexp.mjs",
 	"exports": {
 		".": {
 			"require": "./commonjs/compose-regexp.js",
-			"default": "./compose-regexp.js"
+			"default": "./compose-regexp.js",
+			"types": "./compose-regexp.d.ts"
 		}
 	},
+	"main": "commonjs/compose-regexp.js",
+	"types": "./compose-regexp.d.ts",
+	"module": "compose-regexp.js",
+	"jsnext:main": "compose-regexp.mjs",
 	"scripts": {
 		"build": "gosub build-regexp && gosub rollup && gosub compress && gosub build-toc && ls -l dist/*.br",
 		"build-regexp": "node scripts/build-regexp.js",

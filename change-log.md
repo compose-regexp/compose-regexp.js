@@ -2,6 +2,14 @@
 
 
 
+## v0.6.10
+
+*2022-05-05*
+
+### New features
+
+- Added TypeScript typings
+
 ## v0.6.11, v0.6.12, v0.6.13
 
 *2022-05-05*
