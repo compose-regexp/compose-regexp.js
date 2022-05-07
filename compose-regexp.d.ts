@@ -1,11 +1,11 @@
 
 type NonNegInteger<N extends number, S extends string> = `${N}` extends Subtract<S, NotInInteger> ? N : never
 
-export type Param = string | RegExp | [Param] | (() => Param)
+export type Param = string | RegExp | Param[] | (() => Param)
 
-export declare function either(...x: [Param]) : RegExp
-export declare function sequence(...x: [Param]) : RegExp
-export declare function maybe(...x: [Param]) : RegExp
+export declare function either(...x: Param[]) : RegExp
+export declare function sequence(...x: Param[]) : RegExp
+export declare function maybe(...x: Param[]) : RegExp
 
 
 // Machinery for the quantifiers
@@ -34,7 +34,7 @@ type BracketQuantifier = `{${number}}${Interrogation}` | `{${number},}${Interrog
 
 export declare function suffix<BQ extends BracketQuantifier>(
     s: SimpleQuantifier | HackyQuantifier | Subtract<BQ, NotInInteger>,
-    ...x: [Param]
+    ...x: Param[]
 ) : RegExp
 
 
@@ -105,23 +105,23 @@ type TwoFlags =
 export interface flags<Str extends string>{
     add(
         flags: Subtract<CheckType<Flags, Str>, TwoFlags>,
-        ...x: [Param]
+        ...x: Param[]
     ) : RegExp
 }
 
-export declare function capture(...x: [Param]) : RegExp
-export declare function namedCapture(label: string, ...x: [Param]) : RegExp
+export declare function capture(...x: Param[]) : RegExp
+export declare function namedCapture(label: string, ...x: Param[]) : RegExp
 export declare function ref(n:number): RegExp
 export declare function ref(n:number, depth:number): RegExp
 export declare function ref(s:string): RegExp
 
 
-export declare function lookAhead(...x: [Param]) : RegExp
-export declare function notAhead(...x: [Param]) : RegExp
-export declare function lookBehind(...x: [Param]) : RegExp
-export declare function notBehind(...x: [Param]) : RegExp
+export declare function lookAhead(...x: Param[]) : RegExp
+export declare function notAhead(...x: Param[]) : RegExp
+export declare function lookBehind(...x: Param[]) : RegExp
+export declare function notBehind(...x: Param[]) : RegExp
 
-export declare function atomic(...x: [Param]) : RegExp
+export declare function atomic(...x: Param[]) : RegExp
 
 export declare function bound(x: Param) : RegExp
 export declare function noBound(x: Param) : RegExp

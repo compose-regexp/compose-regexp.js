@@ -6,6 +6,14 @@
 
 *2022-05-07*
 
+### Bug fixes
+
+- Correctly handle variadic params in TS
+
+## v0.6.16
+
+*2022-05-07*
+
 ### New features
 
 - Better TypeScript typings
