@@ -1,34 +1,48 @@
 
+type NonNegInteger<N extends number, S extends string> = `${N}` extends Subtract<S, NotInInteger> ? N : never
+
 export type Param = string | RegExp | [Param] | (() => Param)
 
 export declare function either(...x: [Param]) : RegExp
 export declare function sequence(...x: [Param]) : RegExp
-
 export declare function maybe(...x: [Param]) : RegExp
+
 
 // Machinery for the quantifiers
 
-type Interrogation = '' | '?'
-
-type BracketQuantifier = `{${number}}${Interrogation}` | `{${number},}${Interrogation}` | `{${number},${number}}${Interrogation}`
-
-type Dot = `${string}.${string}`
-type E = `${string}e${string}` | `${string}E${string}`
-type Minus = `${string}-${string}`
-
 type Subtract<T, U> = T & Exclude<T, U>
+
+type Interrogation = '' | '?'
 
 type SimpleQuantifier = '*' | '+' | '?' | '*?' | '+?' | '??'
 
-export declare function suffix<T extends BracketQuantifier>(
-    s: SimpleQuantifier | Subtract<T, Dot | E | Minus>,
+type NotInInteger = 
+    | `${string}.${string}`
+    | `${string}E${string}`
+    | `${string}N${string}` 
+    | `${string}I${string}` 
+    | `${string}e${string}` 
+    | `${string}-${string}`
+
+type HackyQuantifier =
+    | number
+    | [number]
+    | [number, number]
+    | {'0': number, '1': undefined, length: 2} & Array<any>
+
+type BracketQuantifier = `{${number}}${Interrogation}` | `{${number},}${Interrogation}` | `{${number},${number}}${Interrogation}`
+
+export declare function suffix<BQ extends BracketQuantifier>(
+    s: SimpleQuantifier | HackyQuantifier | Subtract<BQ, NotInInteger>,
     ...x: [Param]
 ) : RegExp
+
 
 // Machinery for the flags
 // Based on https://glitch.com/~efficacious-valley-repair 's output for
 // `/^[dgimsuy]{6}$/`
 // That glitch is the work of https://github.com/AnyhowStep
+// repo: https://github.com/AnyhowStep/efficacious-valley-repair
 
 type Head<StrT extends string> = StrT extends `${infer HeadT}${string}` ? HeadT : never;
 
@@ -88,9 +102,6 @@ type TwoFlags =
     | `${string}g${string}y${string}`
     | `${string}y${string}g${string}`
 
-type Subtract<T, U> = T & Exclude<T, U>
-
-
 export interface flags<Str extends string>{
     add(
         flags: Subtract<CheckType<Flags, Str>, TwoFlags>,
@@ -100,10 +111,10 @@ export interface flags<Str extends string>{
 
 export declare function capture(...x: [Param]) : RegExp
 export declare function namedCapture(label: string, ...x: [Param]) : RegExp
-
 export declare function ref(n:number): RegExp
 export declare function ref(n:number, depth:number): RegExp
 export declare function ref(s:string): RegExp
+
 
 export declare function lookAhead(...x: [Param]) : RegExp
 export declare function notAhead(...x: [Param]) : RegExp

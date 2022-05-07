@@ -2,15 +2,23 @@
 
 
 
-## v0.6.10
+## v0.6.16
 
-*2022-05-05*
+*2022-05-07*
+
+### New features
+
+- Better TypeScript typings
+
+## v0.6.15
+
+*2022-05-06*
 
 ### New features
 
 - Added TypeScript typings
 
-## v0.6.11, v0.6.12, v0.6.13
+## v0.6.11, v0.6.12, v0.6.13, v0.6.14
 
 *2022-05-05*
 
