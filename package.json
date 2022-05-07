@@ -35,7 +35,8 @@
 		"regexp",
 		"builder",
 		"regular",
-		"expression"
+		"expression",
+		"combinator"
 	],
 	"author": "Pierre-Yves Gérardy",
 	"license": "MIT",
