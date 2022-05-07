@@ -91,20 +91,22 @@ type InLanguage_0 = Accepts<Flags, "df"> /** Insert your string here */
 
 type CheckType<F extends Flags, Str extends string> = Accepts<F, Str> extends true ? Str : [`Invalid flags: ${Str}`];
 
-type TwoFlags = 
-    | `${string}d${string}d${string}`
-    | `${string}g${string}g${string}`
-    | `${string}i${string}i${string}`
-    | `${string}m${string}m${string}`
-    | `${string}s${string}s${string}`
-    | `${string}u${string}u${string}`
-    | `${string}y${string}y${string}`
+type TwoFlags<Letter extends string> = `${string}${Letter}${string}${Letter}${string}`
+
+type FlagPairs = 
+    | TwoFlags<'d'>
+    | TwoFlags<'g'>
+    | TwoFlags<'i'>
+    | TwoFlags<'m'>
+    | TwoFlags<'s'>
+    | TwoFlags<'u'>
+    | TwoFlags<'y'>
     | `${string}g${string}y${string}`
     | `${string}y${string}g${string}`
 
-export interface flags<Str extends string>{
-    add(
-        flags: Subtract<CheckType<Flags, Str>, TwoFlags>,
+export const flags: {
+    add<Str extends string>(
+        flags: Subtract<CheckType<Flags, Str>, FlagPairs>,
         ...x: Param[]
     ) : RegExp
 }
