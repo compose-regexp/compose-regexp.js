@@ -1,5 +1,13 @@
 # Change Log
 
+## v0.6.21
+
+*2022-05-08*
+
+### Bug fixes
+
+- Actually fix the last bug...
+
 ## v0.6.20
 
 *2022-05-08*
