@@ -1,7 +1,7 @@
 import o from 'ospec'
 
 // This must happen before importing the lib
-import {nullProto, r, m} from '../test-utils/utils.js'
+import {nullProto, r} from '../test-utils/utils.js'
 
 import {
 	atomic, notAhead, bound, capture, charSet, either,
@@ -101,3 +101,4 @@ o.spec("integration", function() {
 	})
 })
 
+void [].forEach(()=>[atomic, notAhead, bound, capture, charSet, either, flags, lookAhead, lookBehind, namedCapture, noBound, notBehind, ref, sequence, suffix])

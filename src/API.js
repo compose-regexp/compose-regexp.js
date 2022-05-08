@@ -1,7 +1,7 @@
 import {slice, supportsLookBehind, supportsU, unescape} from './utils.js'
 
 import {assemble, decorate, $direction, finalize, flagsMatcher, $flagValidator, metadata, needsWrappingForQuantifier, $$_resetRefCapsAndFlags} from './core.js'
-import {groupNameMatcher} from './regexps.js'
+import {groupNameMatcher, suffixMatcher} from './regexps.js'
 
 //- - - - - - - - - - -//
 // - - ~ - -   - -   - //
@@ -59,8 +59,6 @@ export var notAhead = makeAssertion('(?!', 1)
 export var lookBehind = makeAssertion('(?<=', -1, throwIfNoLookBehind, "lookBehind")
 export var notBehind = makeAssertion('(?<!', -1, throwIfNoLookBehind, "notBehind")
 
-var suffixMatcher = /^(?:[+*?]|\{(\d+),?(\d*)\})\??$/
-
 var call = _suffix.call
 
 function _suffix() {
@@ -75,7 +73,7 @@ function _suffix() {
 export function suffix(quantifier) {
 	if (typeof quantifier !== 'string') quantifier = '{' + String(quantifier) + '}'
 	var match = quantifier.match(suffixMatcher)
-	if (!match || match[2] && Number(match[2]) < Number(match[1])) throw new SyntaxError("Invalid suffix '" + quantifier+ "'.")
+	if (!match || match[3] && Number(match[3]) < Number(match[2])) throw new SyntaxError("Invalid suffix '" + quantifier+ "'.")
 	return arguments.length === 1
 	? _suffix.bind(quantifier, quantifier)
 	: _suffix.apply(quantifier, arguments)

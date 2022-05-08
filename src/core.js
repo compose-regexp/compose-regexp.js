@@ -1,5 +1,5 @@
 
-import {allFlags, supportsLookBehind, hasOwn, identity, map, RegExpRef, store, supportsU, unescape} from './utils.js'
+import {allFlags, supportsLookBehind, hasOwn, identity, map, RegExpRef, store, unescape} from './utils.js'
 import {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, mEndAnchor, mStartAnchor, numRefMatcher, oneEscapeOrCharClassMatcher, pEscapeMatcher, stringNormalizerMatcher, tokenMatcher, uProblemCharClassMatcher, uProblemDefaultMatcher} from './regexps.js'
 
 // General notes:
@@ -484,7 +484,7 @@ export function assemble(patterns, either, contextRequiresWrapping, initialCapIn
 					kind: 'regexp',
 					source: getSource(item)
 				}))
-				: handleOtherTypes(item, contextRequiresWrapping)
+				: handleOtherTypes(item)
 			)
 		// fixForFlags and $$_fixRefs can't be inlined in the first mat, above they rely on side effects of the
 		// `check` functions having all happenned before they run.

@@ -639,8 +639,8 @@ o.spec('suffix', function(){
 			const R = RegExp
 			RegExp = ()=>{}
 			try {
-				o(function() { suffix(op, 'a') }).throws(SyntaxError)
-				o(function() { suffix(op) }).throws(SyntaxError)
+				o(function() { suffix(op, 'a') }).throws(SyntaxError)(op)
+				o(function() { suffix(op) }).throws(SyntaxError)(op)
 			} finally {
 				RegExp = R
 			}

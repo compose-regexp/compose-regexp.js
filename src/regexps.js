@@ -7,11 +7,11 @@
 
 //        /!\ DO NOT EDIT MANUALLY /!\
 
-export {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, mEndAnchor, mStartAnchor, numRefMatcher, oneEscapeOrCharClassMatcher, pEscapeMatcher, stringNormalizerMatcher, tokenMatcher, uProblemCharClassMatcher, uProblemDefaultMatcher}
+export {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, mEndAnchor, mStartAnchor, numRefMatcher, oneEscapeOrCharClassMatcher, pEscapeMatcher, stringNormalizerMatcher, suffixMatcher, tokenMatcher, uProblemCharClassMatcher, uProblemDefaultMatcher}
 
 /*
 drop this in ./core.js when changing the list:
-import {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, mEndAnchor, mStartAnchor, numRefMatcher, oneEscapeOrCharClassMatcher, pEscapeMatcher, stringNormalizerMatcher, tokenMatcher, uProblemCharClassMatcher, uProblemDefaultMatcher} from './regexps.js'
+import {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, mEndAnchor, mStartAnchor, numRefMatcher, oneEscapeOrCharClassMatcher, pEscapeMatcher, stringNormalizerMatcher, suffixMatcher, tokenMatcher, uProblemCharClassMatcher, uProblemDefaultMatcher} from './regexps.js'
 */
 
 import {supportsU} from './utils.js'
@@ -45,6 +45,9 @@ var pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/
 
 
 var stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g
+
+
+var suffixMatcher = /^(?:[+*?]|\{(?=((\d+),?(\d*)))\1\})\??$/
 
 
 var tokenMatcher = /(\\.)|[-()|\[\]]((?=\?<?[=!]))?/g

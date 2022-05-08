@@ -1,4 +1,4 @@
-import {atomic, capture, either, flags, lookAhead, maybe, sequence, suffix} from 'compose-regexp'
+import {atomic, capture, either, flags, lookAhead, maybe, sequence, suffix} from '../node_modules/compose-regexp/compose-regexp.js'
 
 // function compare(x, ref) {
 //     Object.entries(x).forEach(([name, rx])=>{
@@ -13,6 +13,7 @@ import {atomic, capture, either, flags, lookAhead, maybe, sequence, suffix} from
 
 const output = {}
 
+const anchor = (...x) => sequence(/^/, ...x, /$/)
 
 output.captureMatcher = flags.add('g', either(
     ['\\', /[^]/],
@@ -58,6 +59,14 @@ output.oneEscapeOrCharClassMatcher = sequence(
 output.pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/
 
 output.stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g
+
+output.suffixMatcher = anchor(
+    either(
+        /[+*?]/,
+        ['{', atomic(/(\d+),?(\d*)/), '}']
+    ),
+    maybe('?')
+);
 
 output.tokenMatcher = flags.add('g', either(
     capture('\\', /./),
