@@ -44,7 +44,7 @@ You can test it live on [flems.io](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYF
 ## TOC
 
 <!-- START toc -->
-- [compose-regexp.js](#compose-regexpjs)
+- [![compose-regexp.js](https://raw.githubusercontent.com/compose-regexp/compose-regexp.js/main/logo.svg)](#compose-regexpjshttpsrawgithubusercontentcomcompose-regexpcompose-regexpjsmainlogosvg)
     - [Why you may need this lib](#why-you-may-need-this-lib)
     - [Usage](#usage)
         - [Installation](#installation)
@@ -83,7 +83,6 @@ You can test it live on [flems.io](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYF
     - [Let's talk about flags](#lets-talk-about-flags)
     - [Back References](#back-references)
     - [Browser support](#browser-support)
-    - [Contributing](#contributing)
     - [Limitations and missing pieces](#limitations-and-missing-pieces)
     - [License MIT](#license-mit)<!-- END toc -->
 
