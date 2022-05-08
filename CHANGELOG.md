@@ -1,5 +1,13 @@
 # Change Log
 
+## v0.6.22
+
+*2022-05-08*
+
+### Bug fixes
+
+- Better handling of empty parameter lists.
+
 ## v0.6.21
 
 *2022-05-08*
