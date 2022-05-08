@@ -47,7 +47,7 @@ var pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/
 var stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g
 
 
-var suffixMatcher = /^(?:[+*?]|\{(?=((\d+),?(\d*)))\1\})\??$/
+var suffixMatcher = /^(?:[+*?]|\{(?=((\d+)))\1,?(\d*)\})\??$/
 
 
 var tokenMatcher = /(\\.)|[-()|\[\]]((?=\?<?[=!]))?/g

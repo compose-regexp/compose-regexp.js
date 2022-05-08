@@ -63,7 +63,7 @@ output.stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g
 output.suffixMatcher = anchor(
     either(
         /[+*?]/,
-        ['{', atomic(/(\d+),?(\d*)/), '}']
+        ['{', atomic(/(\d+)/),/,?(\d*)/, '}']
     ),
     maybe('?')
 );
