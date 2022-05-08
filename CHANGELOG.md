@@ -1,6 +1,14 @@
 # Change Log
 
+## v0.6.20
 
+*2022-05-08*
+
+Address various lgtm.com concerns
+
+### Bug fixes
+
+- Remove a ReDOS vuln in the quantifier validator. `atomic()` FTW, but where's my credibility now?
 
 ## v0.6.19
 
