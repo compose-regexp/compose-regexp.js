@@ -1,4 +1,4 @@
-import {atomic, capture, either, flags, lookAhead, maybe, sequence, suffix} from '../node_modules/compose-regexp/compose-regexp.js'
+import {atomic, capture, either, flags, lookAhead, maybe, sequence, suffix} from 'stable-version'
 
 // function compare(x, ref) {
 //     Object.entries(x).forEach(([name, rx])=>{

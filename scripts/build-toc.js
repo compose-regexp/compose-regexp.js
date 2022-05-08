@@ -1,6 +1,6 @@
 import fs from "fs"
 
-import {either, flags, lookAhead, lookBehind, namedCapture as tag, sequence, suffix} from '../compose-regexp.js'
+import {either, flags, lookAhead, lookBehind, namedCapture as tag, sequence, suffix} from 'stable-version'
 
 // My doc-toc replacement:
 

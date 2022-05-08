@@ -509,7 +509,8 @@ export function finalize(x, options) {
 	// const {flags, direction} = options
 	options = options || {}
 	var flags = hasOwn.call(options, 'flags') ? options.flagsOp(getFlags(), options.flags) : getFlags()
-	var result = new RegExp((x.source || ''), flags)
+	var either = options.either
+	var result = new RegExp((either ? x.source || '[]': x.source || ''), flags)
 	metadata.set(result, metadata.set(x.key, {}))
 	metadata.set(result, 'source', x.source)
 	if (hasOwn.call(options, 'direction')) metadata.set(result, 'direction', options.direction)

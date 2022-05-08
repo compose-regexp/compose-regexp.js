@@ -100,7 +100,7 @@ Also, the matching engines are, by spec, required to backtrack on match failures
 
 It doesn't make regular grammars more powerful, they are still [fundamentally limited](https://en.wikipedia.org/w/index.php?title=Chomsky_hierarchy&oldid=762040114#The_hierarchy), but since they are ubiquitous, we may as well have better tooling to put them to use...
 
-`compose-regexp` is reasonably small (~3.8 KiB after compression), and doesn't have dependencies. You can use it as a plain dependency, or, for client-side apps, in a server-side script that generates the RegExps that you ship to the browsers.
+`compose-regexp` is reasonably small (~4 KiB after compression), and doesn't have dependencies. You can use it as a plain dependency, or, for client-side apps, in a server-side script that generates the RegExps that you ship to the browsers.
 
 ## Usage
 
@@ -667,6 +667,8 @@ Some of the library's features rely on newer RegExp features. The `u` flag can't
 ## Limitations and missing pieces
 
 - `compose-regexp` will not be able to mix `i`-flagged and non-`i`-flagged without native support for the scenario. Case-insensitive matching involves case folding both the pattern and the source string, and `compose-regexp` can't access the latter.
+
+- The logic to detect empty patterns only works for rudimentary ones (enough to deal with what we produce AFAICT). TODO: improve this
 
 ## License MIT
 

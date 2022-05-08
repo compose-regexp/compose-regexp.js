@@ -20,8 +20,10 @@ import {isDisjunction} from '../src/core.js'
 o.spec("general", function () {
 	// throw new Error("GAZAR");
 	o('string and a lack of arguments are normalized', function(){
+
+
 		void [
-			either, sequence,
+			sequence, either,
 			lookAhead, notAhead,
 			flags.add(''), capture
 		].forEach(function(f) {
@@ -32,16 +34,29 @@ o.spec("general", function () {
 			o(f(/-/))
 			.satisfies(r(f('-')))
 
-			// empty arg list
-			if (f !== capture)
-				o(f())
-			.satisfies(r(new RegExp('')))
-
-			else
-				o(f())
-			.satisfies(r(/()/))
-
 		})
+		o(sequence()).satisfies(r(new RegExp('')))
+		o(sequence([])).satisfies(r(new RegExp('')))
+
+		o(flags.add('')()).satisfies(r(new RegExp('')))
+		o(flags.add('', [])).satisfies(r(new RegExp('')))
+
+		o(either()).satisfies(r(/[]/))
+		o(either([])).satisfies(r(/[]/))
+
+		o(lookAhead()).satisfies(m({ok:['']}))
+		o(lookAhead([])).satisfies(m({ok:['']}))
+
+		o(notAhead()).satisfies(m({ko:['']}))
+		o(notAhead([])).satisfies(m({ko:['']}))
+
+		o(lookBehind()).satisfies(m({ok:['']}))
+		o(lookBehind([])).satisfies(m({ok:['']}))
+
+		o(notBehind()).satisfies(m({ko:['']}))
+		o(notBehind([])).satisfies(m({ko:['']}))
+
+		o(()=>suffix('*')()).throws(SyntaxError)
 	})
 })
 

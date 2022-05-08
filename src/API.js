@@ -17,15 +17,16 @@ import {groupNameMatcher, suffixMatcher} from './regexps.js'
 // public API
 
 var empty = /(?:)/
+var never = /[]/
 
 function throwIfNoLookBehind(name) {
 	if (!supportsLookBehind) throw new Error("no support for /(?<=...)/ which is required by " + name + "()")
 }
 
 export function either() {
-	if (!arguments.length) return empty
+	if (!arguments.length) return never
     $$_resetRefCapsAndFlags()
-    return finalize(assemble(arguments, true, false, 0))
+    return finalize(assemble(arguments, true, false, 0), {either: true})
 }
 
 function _sequence() {
@@ -38,10 +39,10 @@ export function sequence() {
     return finalize(_sequence.apply(null, arguments))
 }
 
-function makeAssertion (before, direction, gate, name) {
+function makeAssertion (before, direction, emptyFallback, gate, name) {
 	return function () {
 		if (gate != null) gate(name)
-		if (!arguments.length) return empty
+		if (!arguments.length) return emptyFallback
         var previousDir = $direction.current
         $direction.current = direction
         try {
@@ -54,10 +55,10 @@ function makeAssertion (before, direction, gate, name) {
 	}
 }
 
-export var lookAhead = makeAssertion('(?=', 1)
-export var notAhead = makeAssertion('(?!', 1)
-export var lookBehind = makeAssertion('(?<=', -1, throwIfNoLookBehind, "lookBehind")
-export var notBehind = makeAssertion('(?<!', -1, throwIfNoLookBehind, "notBehind")
+export var lookAhead = makeAssertion('(?=', 1, empty)
+export var notAhead = makeAssertion('(?!', 1, never)
+export var lookBehind = makeAssertion('(?<=', -1, empty, throwIfNoLookBehind, "lookBehind")
+export var notBehind = makeAssertion('(?<!', -1, never, throwIfNoLookBehind, "notBehind")
 
 var call = _suffix.call
 
@@ -66,6 +67,7 @@ function _suffix() {
 	$$_resetRefCapsAndFlags()
 	// a neat hack to pass all arguements but the operator to `_sequence()`
 	// without allocating an array. The operator is passed as `this` which is ignored.
+	if (arguments.length === 1) throw new SyntaxError("Suffix to an empty prefix")
 	var res = call.apply(_sequence, arguments)
 	return finalize(decorate(res, {condition: needsWrappingForQuantifier, open: '(?:', suffix: this}))
 }
