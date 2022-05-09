@@ -1,5 +1,8 @@
 # ![compose-regexp.js](https://raw.githubusercontent.com/compose-regexp/compose-regexp.js/main/logo.svg)
 
+[![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](./package.json)
+[![Tiny file size](https://img.shields.io/github/size/compose-regexp/compose-regexp.js/dist/compose-regexp.min.js.br)](./dist)
+
 - Build and compose *maintainable* regular exprssions in JavaScript.
 - ReDOS, begone!
 
@@ -100,7 +103,7 @@ Also, the matching engines are, by spec, required to backtrack on match failures
 
 It doesn't make regular grammars more powerful, they are still [fundamentally limited](https://en.wikipedia.org/w/index.php?title=Chomsky_hierarchy&oldid=762040114#The_hierarchy), but since they are ubiquitous, we may as well have better tooling to put them to use...
 
-`compose-regexp` is reasonably small (~4 KiB after compression), and doesn't have dependencies. You can use it as a plain dependency, or, for client-side apps, in a server-side script that generates the RegExps that you ship to the browsers.
+`compose-regexp` is reasonably small, and doesn't have dependencies. You can use it as a plain dependency, or, for client-side apps, in a server-side script that generates the RegExps that you ship to the browsers.
 
 ## Usage
 
