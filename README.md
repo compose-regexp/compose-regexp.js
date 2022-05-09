@@ -1,6 +1,6 @@
 # ![compose-regexp.js](https://raw.githubusercontent.com/compose-regexp/compose-regexp.js/main/logo.svg)
 
-[![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](./package.json)
+[![No dependencies](https://img.shields.io/badge/deps-none-brightgreen)](./package.json)
 [![Tiny file size](https://img.shields.io/github/size/compose-regexp/compose-regexp.js/dist/compose-regexp.min.js.br)](./dist)
 
 - Build and compose *maintainable* regular exprssions in JavaScript.
