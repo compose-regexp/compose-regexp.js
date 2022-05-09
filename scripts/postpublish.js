@@ -14,7 +14,7 @@ await git('tag', tag)
 
 await git('push', '--tags')
 
-pkg.devDependencies['compose-regexp'] = version
+pkg.devDependencies['stable-version'] = `npm:compose-regexp@${version}`
 
 writeFileSync('./package.json', JSON.stringify(pkg, null, '\t'), 'utf-8')
 let success = false
