@@ -2,6 +2,7 @@
 
 [![No dependencies](https://img.shields.io/badge/deps-none-brightgreen)](./package.json)
 [![Tiny file size](https://img.shields.io/github/size/compose-regexp/compose-regexp.js/dist/compose-regexp.min.js.br)](./dist)
+[![codecov](https://codecov.io/gh/compose-regexp/compose-regexp.js/branch/main/graph/badge.svg?token=L2qpyWZcv3)](https://codecov.io/gh/compose-regexp/compose-regexp.js)
 
 - Build and compose *maintainable* regular exprssions in JavaScript.
 - ReDOS, begone!
