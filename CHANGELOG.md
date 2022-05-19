@@ -1,5 +1,13 @@
 # Change Log
 
+## v0.6.23
+
+*2022-05-08*
+
+### Bug fixes
+
+- Better character class detection, resulting in fewer non-capturing groups being inserted when adding quantifiers.
+
 ## v0.6.22
 
 *2022-05-08*

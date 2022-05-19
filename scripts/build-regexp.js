@@ -51,11 +51,19 @@ output.oneEscapeOrCharClassMatcher = sequence(
     /^/,
     either(
         ['\\', /./],
-        ['[', atomic(suffix('*?', either(['\\', /./], /./))), ']']
+        [
+            '[',
+            suffix('*', [
+                either(
+                    /[^\]\\]/, 
+                    ['\\', /./]
+                )
+            ]),
+            ']'
+        ]
     ),
     /$/
 )
-
 output.pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/
 
 output.stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g

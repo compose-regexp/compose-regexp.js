@@ -40,7 +40,7 @@ var propDesc = {value: void 0, writable:false, enumerable:false, configurable: f
 function randId(){return "_" + Math.floor(Math.random() * Math.pow(2,32)).toString(36)}
 
 export var store = 
-// (typeof WeakMap !== 'undefined') ? new WeakMap : 
+(typeof WeakMap !== 'undefined') ? new WeakMap :
 // degenerate WeakMap polyfill
 {
 	// 128 bits should be enough for everyone

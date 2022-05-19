@@ -38,7 +38,7 @@ var mStartAnchor = /(?:^|(?<=[\n\r\u2028\u2029]))/
 var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\$d:(\d+),n:(\d+)\^/g
 
 
-var oneEscapeOrCharClassMatcher = /^(?:\\.|\[(?=((?:\\.|.)*?))\1\])$/
+var oneEscapeOrCharClassMatcher = /^(?:\\.|\[(?:[^\]\\]|\\.)*\])$/
 
 
 var pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/

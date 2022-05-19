@@ -632,6 +632,18 @@ o.spec('suffix', function(){
 			o(suffix(op, /foo/))
 			.satisfies(r(new RegExp('(?:foo)' + n(op))))
 
+			o(suffix(op, /[]/))
+			.satisfies(r(new RegExp('[]' + n(op))))
+
+			o(suffix(op, /[bar]/))
+			.satisfies(r(new RegExp('[bar]' + n(op))))
+
+			o(suffix(op, /[b-r]/))
+			.satisfies(r(new RegExp('[b-r]' + n(op))))
+
+			o(suffix(op, /[\]-]/))
+			.satisfies(r(new RegExp('[\\]-]' + n(op))))
+
 			o(suffix(op, /a|b/))
 			.satisfies(r(new RegExp('(?:a|b)' + n(op))))
 

@@ -116,7 +116,7 @@ $ npm install --save compose-regexp
 ### Example
 
 ```JS
-import {capture, either, ref, sequence, suffix} from "compose-regexp"
+import {capture, either, notAhead, ref, sequence, suffix} from "compose-regexp"
 
 // Let's match a string, here's a naive RegExp that recognizes strings
 // with single or double quotes.
@@ -126,7 +126,13 @@ const Str = sequence(
     suffix('*?', // a frugal Kleene star
         either (
             ["\\", /./s], // using the `s` flag to match escaped line terminators
-            /./            // no `s` flag here, bare line terminators are invalid
+            [
+                notAhead(either(
+                    ref(1),
+                    "\\"
+                )),
+                /./      // no `s` flag here, bare line terminators are invalid
+            ]
         )
     ),
     ref(1)
