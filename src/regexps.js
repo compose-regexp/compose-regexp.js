@@ -53,8 +53,8 @@ var suffixMatcher = /^(?:[+*?]|\{(?=((\d+)))\1,?(\d*)\})\??$/
 var tokenMatcher = /(\\.)|[-()|\[\]]((?=\?<?[=!]))?/g
 
 
-var uProblemCharClassMatcher = /\\u(?:[0-9A-Fa-f]){4}|\\x(?:[0-9A-Fa-f]){2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g
+var uProblemCharClassMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g
 
 
-var uProblemDefaultMatcher = /\\u(?:[0-9A-Fa-f]){4}|\\x(?:[0-9A-Fa-f]){2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g
+var uProblemDefaultMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g
 

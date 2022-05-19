@@ -50,18 +50,22 @@
 		"gosub": "1.1.0",
 		"ospec": "^4.1.4",
 		"rollup": "^2.70.1",
-		"stable-version": "npm:compose-regexp@0.6.22",
+		"stable-version": "npm:compose-regexp@0.6.23",
 		"uglify-js": "^2.6.1"
 	},
-	"c8" : {
+	"c8": {
 		"reporter": [
-		  "html",
-		  "text",
-		  "lcov"
+			"html",
+			"text",
+			"lcov"
 		],
 		"lines": 95,
 		"branches": "82",
 		"statements": "95",
-		"exclude": ["test-utils/*.*", "node_modules/**/*", "tests/*.*"]
-	  }
+		"exclude": [
+			"test-utils/*.*",
+			"node_modules/**/*",
+			"tests/*.*"
+		]
+	}
 }
