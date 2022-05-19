@@ -1,5 +1,8 @@
 import o from 'ospec'
 
+const  {hasOwnProperty} = Object.prototype
+const hasOwn = (x, prop)=> hasOwnProperty.call(x, prop)
+
 export function calledFrom(n=0) {
 	try {throw new Error()} catch(e) {return e.stack.split("\n")[2+n].replace(/^\s*/, "")}
 }
@@ -88,9 +91,9 @@ export function r(ref){
 }
 
 export function m(spec) {
-	if (!Object.hasOwn(spec, 'ok') && !Object.hasOwn(spec, 'ko')) throw new TypeError("No `ok` nor `ko` in `m()` test")
-	if (Object.hasOwn(spec, 'ok') && !Array.isArray(spec.ok)) throw new TypeError("Array expected for spec.ok")
-	if (Object.hasOwn(spec, 'ko') && !Array.isArray(spec.ko)) throw new TypeError("Array expected for spec.ko")
+	if (!hasOwn(spec, 'ok') && !hasOwn(spec, 'ko')) throw new TypeError("No `ok` nor `ko` in `m()` test")
+	if (hasOwn(spec, 'ok') && !Array.isArray(spec.ok)) throw new TypeError("Array expected for spec.ok")
+	if (hasOwn(spec, 'ko') && !Array.isArray(spec.ko)) throw new TypeError("Array expected for spec.ko")
 	return function (rx) {
 		const errors = []
 		const successes = []
