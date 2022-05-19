@@ -18,7 +18,7 @@
 		"build": "gosub build-regexp && gosub rollup && gosub compress && gosub build-toc && ls -l dist/*.br",
 		"build-regexp": "node scripts/build-regexp.js",
 		"build-toc": "node scripts/build-toc.js",
-		"cover": "gosub build-regexp && c8 -r lcov ./node_modules/.bin/ospec",
+		"cover": "gosub build-regexp && c8 --exclude 'tests/*' --exclude 'tests-utils/*' -r lcov ./node_modules/.bin/ospec",
 		"compress": "gosub compress-uglify && gosub compress-brotli",
 		"compress-brotli": "brotli -f -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js",
 		"compress-uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
