@@ -44,7 +44,7 @@
 	function randId(){return "_" + Math.floor(Math.random() * Math.pow(2,32)).toString(36)}
 
 	var store = 
-	// (typeof WeakMap !== 'undefined') ? new WeakMap : 
+	(typeof WeakMap !== 'undefined') ? new WeakMap :
 	// degenerate WeakMap polyfill
 	{
 		// 128 bits should be enough for everyone
@@ -95,7 +95,7 @@
 	var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\$d:(\d+),n:(\d+)\^/g;
 
 
-	var oneEscapeOrCharClassMatcher = /^(?:\\.|\[(?=((?:\\.|.)*?))\1\])$/;
+	var oneEscapeOrCharClassMatcher = /^(?:\\.|\[(?:[^\]\\]|\\.)*\])$/;
 
 
 	var pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/;
