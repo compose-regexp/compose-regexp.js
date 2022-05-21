@@ -38,13 +38,13 @@ Object.entries(console).forEach(([k, v]) => {
 
 o.after(function(){
 	Object.entries(console).forEach(([k, v]) => {
-		o(v.callSites).satisfies(
-			set => (
-				set.size === 0
+		o([...v.callSites].filter(x=>!x.includes("node:internal/console"))).satisfies(
+			callSites => (
+				callSites.length === 0
 				? {pass: true}
 				: {pass: false, message:
-`console.${k}() was called from ${set.size} site${set.size === 1 ? '' : 's'}
-${sort([...v.callSites]).map(s => "... " + s).join('\n')}
+`console.${k}() was called from ${callSites.length} site${callSites.length === 1 ? '' : 's'}
+${sort(callSites).map(s => "... " + s).join('\n')}
 `
 				}
 			)

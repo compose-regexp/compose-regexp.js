@@ -868,11 +868,28 @@ o.spec("refs", function () {
 		.satisfies(r(/(?:o)()\1()(?=e)\2(?!a)()()()\5/))
 
 	})
-	o("nested refs with a depth", function() {
-		// absurd, would throw with /u/
-		o(capture(ref(1)))
-		.satisfies(r(/(\1)/))
+	o("refs nested in captures", function () {
+		o(capture(/()\1/)).satisfies(r(/(()\2)/))
+		o(capture(capture(),ref(1))).satisfies(r(/(()\2)/))
+		o(capture([capture(),ref(1)])).satisfies(r(/(()\2)/))
+		o(capture([[capture(),ref(1)]])).satisfies(r(/(()\2)/))
+		o(sequence(/()/, capture(capture(),ref(1)))).satisfies(r(/()(()\3)/))
+		o(sequence(/()/, capture([capture(),ref(1)]))).satisfies(r(/()(()\3)/))
 
+		o(capture(capture(""),ref(1))).satisfies(r(/(()\2)/))
+		o(capture([capture(""),ref(1)])).satisfies(r(/(()\2)/))
+		o(capture([[capture(""),ref(1)]])).satisfies(r(/(()\2)/))
+		o(sequence(/()/, capture(capture(""),ref(1)))).satisfies(r(/()(()\3)/))
+		o(sequence(/()/, capture([capture(""),ref(1)]))).satisfies(r(/()(()\3)/))
+
+		o(capture(capture("i"),ref(1))).satisfies(r(/((i)\2)/))
+		o(capture([capture("i"),ref(1)])).satisfies(r(/((i)\2)/))
+		o(capture([[capture("i"),ref(1)]])).satisfies(r(/((i)\2)/))
+		o(sequence(/()/, capture(capture("i"),ref(1)))).satisfies(r(/()((i)\3)/))
+		o(sequence(/()/, capture([capture("i"),ref(1)]))).satisfies(r(/()((i)\3)/))
+
+	})
+	o("nested refs with a depth", function() {
 		o(sequence(/./u, capture(/./u), capture(ref(1,1))))
 		.satisfies(r(/.(.)(\1)/u))
 
