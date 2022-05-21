@@ -1,5 +1,13 @@
 # Change Log
 
+## v0.6.24
+
+*2022-05-21*
+
+### Bug fixes
+
+- Bump `ref()` indices when directly nested in a `capture()` call.
+
 ## v0.6.23
 
 *2022-05-19*
