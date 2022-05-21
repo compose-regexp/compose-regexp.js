@@ -110,10 +110,10 @@
 	var tokenMatcher = /(\\.)|[-()|\[\]]((?=\?<?[=!]))?/g;
 
 
-	var uProblemCharClassMatcher = /\\u(?:[0-9A-Fa-f]){4}|\\x(?:[0-9A-Fa-f]){2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g;
+	var uProblemCharClassMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g;
 
 
-	var uProblemDefaultMatcher = /\\u(?:[0-9A-Fa-f]){4}|\\x(?:[0-9A-Fa-f]){2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g;
+	var uProblemDefaultMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g;
 
 	// General notes:
 	// 
@@ -396,11 +396,15 @@
 						if (!inCClass) {
 							if (refIndex != null) {
 								var fixedRefIndex = (Number(refIndex) + count);
-								if (fixedRefIndex > 99) throw new RangeError("Too many back references")
+								if (fixedRefIndex > 99) throw new RangeError("Back reference index larger than 99")
 
 								return '\\' + String(fixedRefIndex)
 							} else if (depth != null) {
-								if (depth === '0') return '\\' + String(thunkIndex)
+								if (depth === '0') {
+									var fixedRefIndex = Number(thunkIndex) + initialOffset;
+									if (fixedRefIndex > 99) throw new RangeError("Back reference index larger than 99")
+									return '\\' + String(fixedRefIndex)
+								}
 								else return '$d:' + (Number(depth) -1) + ',n:' + thunkIndex + '^'
 							}
 						}
@@ -554,7 +558,6 @@
 	// used for adding groups, assertions and quantifiers
 
 	function decorate(x, options) {
-		// console.log({x, options})
 		if(!options.condition || options.condition(x)) x.source = options.open + (x.source || '') + ')';
 		if (options.suffix) x.source += options.suffix;
 		return x
@@ -579,7 +582,6 @@
 	// The recursive brain of compose-regexp
 
 	function assemble(patterns, either, contextRequiresWrapping, initialCapIndex) {
-		// console.log({patterns})
 		// this and [1] below could probably be simplified
 		contextRequiresWrapping = contextRequiresWrapping || patterns.length > 1;
 		return map.call(patterns, function processItem(item) {
@@ -616,8 +618,6 @@
 	}
 
 	function finalize(x, options) {
-		// console.trace({x})
-		// const {flags, direction} = options
 		options = options || {};
 		var flags = hasOwn.call(options, 'flags') ? options.flagsOp(getFlags(), options.flags) : getFlags();
 		var either = options.either;
