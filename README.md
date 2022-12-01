@@ -149,7 +149,7 @@ noBound(...exprs) // like /\B/ for arbitrary character classes
 // The result of these function will match ...
 charSet.difference(a, b) // ... characters that match charSet `a` and don't match charSet `b`
 charSet.intersection(a, b) // ... characters that match both charSet `a` and charSet `b`
-charsSet.complement(a) // ... characters that don't match `a`
+charSet.complement(a) // ... characters that don't match `a`
 charSet.union(...cs) // ... character that match any of the provided charsets
 
 // The lack of non-capturing group API is deliberate. We insert them
