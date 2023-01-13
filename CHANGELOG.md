@@ -2,7 +2,13 @@
 
 ## v0.6.25
 
-*2022-05-21*
+*2022-01-13*
+
+- Merge README fixes (version bump for the npm README).
+
+## v0.6.25
+
+*2022-01-13*
 
 - Cosmetic tweaks to the logo (version bump for the npm README).
 
