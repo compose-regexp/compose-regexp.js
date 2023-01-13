@@ -73,5 +73,5 @@ console.log("All good!")
 
 const {stdout: changes} = await readGit('status', '--porcelain')
 if (changes !== '') {
-	await git('commit', '-am', `"build artefacts"`)
+	await git('commit', '-am', `build artefacts`)
 }
