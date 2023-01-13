@@ -52,7 +52,6 @@ You can test it live on [flems.io](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYF
     - [Why you may need this lib](#why-you-may-need-this-lib)
     - [Usage](#usage)
         - [Installation](#installation)
-        - [Example](#example)
     - [API](#api)
         - [In a nutshell](#in-a-nutshell)
         - [General notes](#general-notes)
