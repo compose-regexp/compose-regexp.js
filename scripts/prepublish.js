@@ -17,17 +17,18 @@ await Promise.all([
 		await Promise.all([
 			(async () => {
 				try {
-					// `git status --porecelain` is empty when the tree is clean
-					const {stdout: status} = await readGit('status', '--porcelain')
-					if (status.trim() !== '') errors.push("/!\\ The git working tree is not clean")
-
 					const {stdout: branch} = await readGit('branch', '--show-current')
 					if (branch !== "main\n") {
 						errors.push(`/!\\ We are on branch ${branch.trim()}, we publish from main`)
 
 					}
+					// `git status --porecelain` is empty when the tree is clean
+					const {stdout: status} = await readGit('status', '--porcelain')
+					if (status.trim() !== '') errors.push("/!\\ The git working tree is not clean")
+
+					const _ignore = await readGit('push', '--dry-run', '--porcelain')
 				} catch({stderr, stdout}) {
-					errors.push("/!\\ git status or git branch error:", stdout, stderr)
+					errors.push("/!\\ git status, git branch or git push --dry-run error:", stdout, stderr)
 				}
 			})(),
 			(async () => {
@@ -62,7 +63,7 @@ await Promise.all([
 
 
 if (errors.length !== 0) {
-	console.error('\n' + errors.join('\n\n') + '\n')
+	console.error('\n' + errors.filter(x=>x!=='').join('\n\n') + '\n')
 	process.exit(1)
 }
 
