@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.6.25
+
+*2022-05-21*
+
+- Cosmetic tweaks to the logo (version bump for the npm README).
+
 ## v0.6.24
 
 *2022-05-21*
