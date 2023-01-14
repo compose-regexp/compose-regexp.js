@@ -1,6 +1,6 @@
 {
 	"name": "compose-regexp",
-	"version": "0.6.26",
+	"version": "0.6.27",
 	"description": "A set of functions to build and compose complex regular expressions",
 	"type": "module",
 	"exports": {
