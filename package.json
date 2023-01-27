@@ -1,6 +1,6 @@
 {
 	"name": "compose-regexp",
-	"version": "0.6.27",
+	"version": "0.6.28",
 	"description": "A set of functions to build and compose complex regular expressions",
 	"type": "module",
 	"exports": {
@@ -19,9 +19,9 @@
 		"build-regexp": "node scripts/build-regexp.js",
 		"build-toc": "node scripts/build-toc.js",
 		"cover": "gosub build-regexp && c8 ./node_modules/.bin/ospec",
-		"compress": "gosub compress-uglify && gosub compress-brotli",
+		"compress": "gosub compress-terser && gosub compress-brotli",
 		"compress-brotli": "brotli -f -o dist/compose-regexp.min.js.br dist/compose-regexp.min.js",
-		"compress-uglify": "uglifyjs commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
+		"compress-terser": "terser commonjs/compose-regexp.js -cm --preamble '/**@license MIT-compose-regexp.js-©Pierre-Yves Gérardy*/' > dist/compose-regexp.min.js",
 		"prepublishOnly": "node --no-warnings scripts/prepublish.js",
 		"postpublish": "node ./scripts/postpublish.js",
 		"rollup": "rollup compose-regexp.js -o commonjs/compose-regexp.js -f umd -n composeRegexp --amd.id compose-regexp",
@@ -49,9 +49,9 @@
 		"c8": "^7.11.2",
 		"gosub": "1.1.0",
 		"ospec": "^4.1.4",
-		"rollup": "^2.70.1",
+		"rollup": "^3.11.0",
 		"stable-version": "npm:compose-regexp@0.6.27",
-		"uglify-js": "^2.6.1"
+		"terser": "^5.16.1"
 	},
 	"c8": {
 		"reporter": [

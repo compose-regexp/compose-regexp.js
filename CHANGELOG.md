@@ -1,20 +1,26 @@
 # Change Log
 
+## v0.6.28
+
+*2023-01-27*
+
+- ES6 conversion, bump babel, switch to terser. The .min.br file is 92 bytes lighter as a result.
+
 ## v0.6.27
 
-*2022-01-14*
+*2023-01-14*
 
 - More logo tweaks
 
 ## v0.6.26
 
-*2022-01-13*
+*2023-01-13*
 
 - Merge README fixes (version bump for the npm README).
 
 ## v0.6.25
 
-*2022-01-13*
+*2023-01-13*
 
 - Cosmetic tweaks to the logo (version bump for the npm README).
 
