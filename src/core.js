@@ -1,9 +1,13 @@
 
 import {allFlags, supportsLookBehind, hasOwn, identity, map, RegExpRef, store, unescape} from './utils.js'
-import {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, mEndAnchor, mStartAnchor, numRefMatcher, oneEscapeOrCharClassMatcher, pEscapeMatcher, stringNormalizerMatcher, tokenMatcher, uProblemCharClassMatcher, uProblemDefaultMatcher} from './regexps.js'
+import {
+	captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, mEndAnchor,
+	mStartAnchor, numRefMatcher, oneEscapeOrCharClassMatcher, pEscapeMatcher,
+	stringNormalizerMatcher, tokenMatcher, uProblemCharClassMatcher, uProblemDefaultMatcher
+} from './regexps.js'
 
 // General notes:
-// 
+//
 // 1. Most functions here take an `x` parameter, which is our internal representation
 // of regexps, strings, etc... it has the following structure
 //
@@ -47,7 +51,7 @@ function MetaData() {
 
 function findOrCreateMd(target) {
 	if (target instanceof RegExpRef) {
-		var md = store.get(target)
+		let md = store.get(target)
 		if (md == null) store.set(target, md = MetaData())
 		return md
 	} else {
@@ -55,22 +59,22 @@ function findOrCreateMd(target) {
 	}
 }
 
-export var metadata = {
+export const metadata = {
 	set: function(target, property, value) {
-		var md = findOrCreateMd(target)
-		return (typeof property === 'object') 
+		const md = findOrCreateMd(target)
+		return (typeof property === 'object')
 		? Object.assign(md, property)
 		: md[property] = value
 	},
 	get: function(target, property) {
-		var md = findOrCreateMd(target)
+		const md = findOrCreateMd(target)
 		return md[property]
 	}
 }
 
 function mdMemo(property, f) {
 	return Object.defineProperty(function(x) {
-		var cached = metadata.get(x.key, property)
+		const cached = metadata.get(x.key, property)
 		if (cached != null) return cached
 		return metadata.set(x.key, property, f(x))
 	}, 'name', {value: property})
@@ -99,9 +103,10 @@ function getSource(x) {
 // assesses if a non-unicode RegExp can be updated to unicode
 // problems are invalid escapes, and quantifiers after
 // a lookahead assertion
-var openGroups = []
+const openGroups = []
 function hasUProblem(x) {
-	var matcher = uProblemDefaultMatcher, result
+	let matcher = uProblemDefaultMatcher
+	let result
 	openGroups.length = 0
 	function use(x) {
 		x.lastIndex = matcher.lastIndex
@@ -145,8 +150,8 @@ function hasUProblem(x) {
 	return false
 }
 
-var countCaptures = mdMemo('captureCount', function countCaptures(x) {
-	var count = 0, inCClass = false, result
+const countCaptures = mdMemo('captureCount', function countCaptures(x) {
+	let count = 0, inCClass = false, result
 	captureMatcher.lastIndex = 0
 	while(result = captureMatcher.exec(x.source)) {
 		if (!inCClass) {
@@ -159,8 +164,8 @@ var countCaptures = mdMemo('captureCount', function countCaptures(x) {
 	return count
 })
 
-var hasRefs = mdMemo('hasRefs', function hasRefs(x) {
-	var hasRefs = false, hasFinalRef = false, inCClass = false, result
+const hasRefs = mdMemo('hasRefs', function hasRefs(x) {
+	let hasRefs = false, hasFinalRef = false, inCClass = false, result
 	numRefMatcher.lastIndex = 0
 	while(result = numRefMatcher.exec(x.source)) {
 		// const [match, refIndex, depth, thunkIndex] = result
@@ -180,9 +185,9 @@ var hasRefs = mdMemo('hasRefs', function hasRefs(x) {
 // choice operator must be wrapped in a non-capturing group. This function
 // detects whether the group is needed or not.
 
-export var isDisjunction = mdMemo('isDisjunction', function isDisjunction(x) {
+export const isDisjunction = mdMemo('isDisjunction', function isDisjunction(x) {
 	if (x.source.indexOf('|') === -1) return false
-	var depth = 0, inCClass = false, result
+	let depth = 0, inCClass = false, result
 	tokenMatcher.lastIndex = 0
 	while(result = tokenMatcher.exec(x.source)) {
 		// const [match, escape] = result
@@ -197,10 +202,10 @@ export var isDisjunction = mdMemo('isDisjunction', function isDisjunction(x) {
 })
 
 // Helper function for needsWrappingForQuantifier
-export var isOneGroupOrAssertion = mdMemo('isOneGroupOrAssertion', function isOneGroupOrAssertion(x) {
-	var source = x.source
+export const isOneGroupOrAssertion = mdMemo('isOneGroupOrAssertion', function isOneGroupOrAssertion(x) {
+	const source = x.source
 	if (source.charAt(0) !== '(' || source.charAt(source.length - 1) !== ')') return false
-	var depth = 0, inCClass = false, result
+	let depth = 0, inCClass = false, result
 	tokenMatcher.lastIndex = 0
 	while(result = tokenMatcher.exec(source)) {
 		// const [match, escape] = result
@@ -225,18 +230,21 @@ export var isOneGroupOrAssertion = mdMemo('isOneGroupOrAssertion', function isOn
 // whereas false positives would be bugs. We do have some false positives:
 // some charsets will be marked as non-atomic.
 export function needsWrappingForQuantifier(x) {
-	var source = x.source
-	if (source == null || source === '^' || source === '$' || source === '\\b' || source === '\\B') throw new SyntaxError("Nothing to repeat: /"+(source || '(?:)')+"/")
+	const source = x.source
+	if (source == null || source === '^' || source === '$' || source === '\\b' || source === '\\B') {
+		throw new SyntaxError(`Nothing to repeat: / ${source || '(?:)' }/`)
+	}
 	// No need to look for standalone \k escapes, the are illegal in U and N mode, an non-atomic otherwise.
 	if (
-		source.length === 1 
-		|| oneEscapeOrCharClassMatcher.test(source) 
+		source.length === 1
+		|| oneEscapeOrCharClassMatcher.test(source)
 		|| $flagValidator.U && pEscapeMatcher.test(source)
 	) return false
 
-	var og = isOneGroupOrAssertion(x)
+	const og = isOneGroupOrAssertion(x)
 	if (!og) return true
-	if (/^\(\?<?[!=]/.test(source)) throw new SyntaxError("Nothing to repeat: /"+source+"/")
+	// Reject look-arounds
+	if (/^\(\?<?[!=]/.test(source)) throw new SyntaxError(`Nothing to repeat: /${ source }/`)
 	return false
 }
 
@@ -258,7 +266,7 @@ export function needsWrappingForQuantifier(x) {
 // - escapes lone brackets
 // - updates the . to and [^] to explicit ranges that exclude the astral characters
 function promoteNonUnicodeToUnicode (source) {
-	var inCClass = false
+	let inCClass = false
 	return source.replace(loneBracketMatcher, function(match, bracket) {
 		if (match === ']') {
 			if (inCClass) inCClass = false
@@ -275,26 +283,26 @@ function promoteNonUnicodeToUnicode (source) {
 // numeric backrefs must be updated for proper composition
 // this ensures that sequence(/()\1/, /()\1/) becomes /()\1()\2/
 function $$_fixRefs(initialOffset) {
-	var count = initialOffset
+	let count = initialOffset
 	return function (x) {
 		if (x.kind === 'regexp' || x.kind === 'result') {
 			if (hasRefs(x)) {
 				$refAndCap.hasRefs = true
-				var inCClass = false
+				let inCClass = false
 				x.source = x.source.replace(numRefMatcher, function(match, refIndex, depth, thunkIndex) {
 					if (!inCClass) {
 						if (refIndex != null) {
-							var fixedRefIndex = (Number(refIndex) + count)
+							const fixedRefIndex = (Number(refIndex) + count)
 							if (fixedRefIndex > 99) throw new RangeError("Back reference index larger than 99")
 
 							return '\\' + String(fixedRefIndex)
 						} else if (depth != null) {
 							if (depth === '0') {
-								var fixedRefIndex = Number(thunkIndex) + initialOffset
+								const fixedRefIndex = Number(thunkIndex) + initialOffset
 								if (fixedRefIndex > 99) throw new RangeError("Back reference index larger than 99")
 								return '\\' + String(fixedRefIndex)
 							}
-							else return '$d:' + (Number(depth) -1) + ',n:' + thunkIndex + '^'
+							else return `$d:${ Number(depth) - 1 },n:${ thunkIndex }^`
 						}
 					}
 					if (match === '[') inCClass = true
@@ -313,16 +321,18 @@ function $$_fixRefs(initialOffset) {
 }
 
 function fixForFlags(x) {
-	var source = x.source
-	if($flagValidator.U && (x.kind === 'regexp' && !x.key.unicode || x.kind === 'result' && !metadata.get(x.key, 'unicode'))) {
-			if(hasUProblem(source)) throw new SyntaxError("Can't upgrade the RegExp to Unicode /"+ source + "/" + (x.kind === 'regexp' ? x.key.flags : ''))
-			x.source = promoteNonUnicodeToUnicode(source)
+	const source = x.source
+	if ($flagValidator.U && (x.kind === 'regexp' && !x.key.unicode || x.kind === 'result' && !metadata.get(x.key, 'unicode'))) {
+		if(hasUProblem(source)) {
+			throw new SyntaxError(`Can't upgrade the RegExp to Unicode /${ source }/${ x.kind === 'regexp' ? x.key.flags : '' }`)
+		}
+		x.source = promoteNonUnicodeToUnicode(source)
 	}
-	var inCClass = false
+	let inCClass = false
 	if (x.kind === 'regexp' && (x.key.dotAll || x.key.multiline)) x.source = source.replace(dotMDotSMatcher, function(match) {
 		if (!inCClass) {
 			if (match === '[') inCClass = true
-			return (x.key.dotAll && match === '.') ? '[^]' 
+			return (x.key.dotAll && match === '.') ? '[^]'
 			: (x.key.multiline && match === '^'&& supportsLookBehind) ? mStartAnchor.source
 			: (x.key.multiline && match === '$' && supportsLookBehind) ? mEndAnchor.source
 			: match
@@ -330,25 +340,32 @@ function fixForFlags(x) {
 			if (match === ']') inCClass = false
 			return match
 		}
-		
+
 	})
 	return x
 }
 
 // ensures that each flag appears only once
-export var flagsMatcher = new RegExp('^(?:([' + allFlags.join('') + '])(?!.*\\1))*$')
+export const flagsMatcher = new RegExp(`^(?:([${ allFlags.join('') }])(?!.*\\1))*$`)
 
+const flagFinder = new RegExp(`[${ allFlags.join() }]`, 'g')
 function $$_checkFlags(x) {
-	var flags = x.key.flags
+	const flags = x.key.flags
 
-	if (!flagsMatcher.test(flags)) throw new TypeError("Unkown flags: " + flags.replace(new RegExp('['+allFlags.join()+']', 'g'), ''))
+	if (!flagsMatcher.test(flags)) {
+		throw new TypeError(`Unkown flag(s): ${ flags.replace(flagFinder, '')}`)
+	}
 
-	var hasU = !!x.key.unicode
-	var hasI = x.key.ignoreCase
-	var hasM = x.key.multiline
+	const hasU = !!x.key.unicode
+	const hasI = x.key.ignoreCase
+	const hasM = x.key.multiline
 
-	if ($flagValidator.I != null && hasI !== $flagValidator.I) throw new SyntaxError("Can't combine i and non-i regexps: " + x.key)
-	if (!supportsLookBehind && $flagValidator.M != null && hasM !== $flagValidator.M) throw new SyntaxError("Can't combine m and non-m regexps: " + x.key)
+	if ($flagValidator.I != null && hasI !== $flagValidator.I) {
+		throw new SyntaxError("Can't combine i and non-i regexps: " + x.key)
+	}
+	if (!supportsLookBehind && $flagValidator.M != null && hasM !== $flagValidator.M) {
+		throw new SyntaxError("Can't combine m and non-m regexps: " + x.key)
+	}
 
 	$flagValidator.I = hasI
 	$flagValidator.M = hasM
@@ -358,11 +375,17 @@ function $$_checkFlags(x) {
 
 
 //+
-var directionNames = {'-1': 'backward', '1': 'forward'}
+const directionNames = {'-1': 'backward', '1': 'forward'}
 function $$_checkDirection(x) {
-	var d = metadata.get(x.key, 'direction')
+	const d = metadata.get(x.key, 'direction')
 	if (d * $direction.current === -1)  throw new TypeError(
-		"Illegal " + directionNames[d] + " RegExp argument while building a " + directionNames[$direction.current] + " one: /" + x.source + "/"
+		`Illegal ${
+			directionNames[d]
+		} RegExp argument while building a ${
+			directionNames[$direction.current]
+		} one: /${
+			x.source
+		}/`
 	)
 	if (d !== 0) $refAndCap.hasRefs = true
 	return x
@@ -375,23 +398,23 @@ function $$_checkDirection(x) {
 function join(forEither) {
 	return forEither
 	? function(x2, x1){
-		x2.source = x2.source == null ? x1.source : x1.source + '|' + x2.source
+		x2.source = x2.source == null ? x1.source : `${ x1.source }|${ x2.source }`
 		return x2
 	}
 	: function(x2, x1){
-		x2.source = x2.source == null 
-		? x1.source 
+		x2.source = x2.source == null
+		? x1.source
 		: x1.source + (
 			// corner case where a numeric ref is followed by a number
-			x1.kind !== 'string' 
+			x1.kind !== 'string'
 			// sets the 'hasFinalRef' metadata as a side effect
 			&& hasRefs(x1)
-			&& metadata.get(x1.key, 'hasFinalRef') 
+			&& metadata.get(x1.key, 'hasFinalRef')
 			&& (/^\d/.test(x2.source))
 			? '(?:)'
 			: ''
 		) + x2.source
-	
+
 		return x2
 	}
 }
@@ -417,12 +440,12 @@ function join(forEither) {
 // Avoid mixing in back references intended to
 // match in one direction inside a regexp that
 // goes the other way.
-export var $direction = {
+export let $direction = {
 	current: 1,
 }
 
-export var $flagValidator
-var $refAndCap
+export let $flagValidator
+let $refAndCap
 
 export function $$_resetRefCapsAndFlags() {
 	// atoms and direction
@@ -436,8 +459,8 @@ export function $$_resetRefCapsAndFlags() {
 // Used by both the aforementioned functions, and the public API.
 
 function $$_reentrantRefCapFlag(f) {
-	var previousRnC = $refAndCap
-	var previousFV = $flagValidator
+	const previousRnC = $refAndCap
+	const previousFV = $flagValidator
 	try {return f()} finally {
 		$refAndCap = previousRnC
 		$flagValidator = previousFV
@@ -465,7 +488,7 @@ function handleOtherTypes (x) {
 		kind: 'string',
 		source: String(x).replace(stringNormalizerMatcher, '\\$&')
 	}
-	throw new TypeError("Can't compose type " + typeof x + " as RegExp")
+	throw new TypeError(`Can't compose type ${ typeof x } as RegExp`)
 }
 
 // The recursive brain of compose-regexp
@@ -494,10 +517,13 @@ export function assemble(patterns, either, contextRequiresWrapping, initialCapIn
 	}).map(fixForFlags).map($$_fixRefs(initialCapIndex)).reduceRight(join(either), {
 		key: metadata.set(null, Object.assign({
 			direction: $refAndCap.hasRefs ? $direction.current : 0,
-			isDisjunction: either && (patterns.length > 1 || patterns.length === 1  && (patterns[0] instanceof RegExpRef) && metadata.get(patterns[0], 'isDisjunction')),
+			isDisjunction: either && (
+				patterns.length > 1
+				|| patterns.length === 1  && (patterns[0] instanceof RegExpRef) && metadata.get(patterns[0], 'isDisjunction')
+			),
 			unicode: $flagValidator.U
 		}, $refAndCap)),
-		kind: 'result', 
+		kind: 'result',
 		source: null
 	})
 }
@@ -508,9 +534,9 @@ function getFlags(){
 
 export function finalize(x, options) {
 	options = options || {}
-	var flags = hasOwn.call(options, 'flags') ? options.flagsOp(getFlags(), options.flags) : getFlags()
-	var either = options.either
-	var result = new RegExp((either ? x.source || '[]': x.source || ''), flags)
+	const flags = hasOwn.call(options, 'flags') ? options.flagsOp(getFlags(), options.flags) : getFlags()
+	const either = options.either
+	const result = new RegExp((either ? x.source || '[]': x.source || ''), flags)
 	metadata.set(result, metadata.set(x.key, {}))
 	metadata.set(result, 'source', x.source)
 	if (hasOwn.call(options, 'direction')) metadata.set(result, 'direction', options.direction)

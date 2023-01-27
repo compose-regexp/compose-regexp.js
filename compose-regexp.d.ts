@@ -33,6 +33,9 @@ type HackyQuantifier =
 type BracketQuantifier = `{${number}}${Interrogation}` | `{${number},}${Interrogation}` | `{${number},${number}}${Interrogation}`
 
 export declare function suffix<BQ extends BracketQuantifier>(
+    s: SimpleQuantifier | HackyQuantifier | Subtract<BQ, NotInInteger>
+) : typeof sequence
+export declare function suffix<BQ extends BracketQuantifier>(
     s: SimpleQuantifier | HackyQuantifier | Subtract<BQ, NotInInteger>,
     ...x: Param[]
 ) : RegExp
@@ -136,4 +139,3 @@ export type charSet = {
     intersection: (a: CharSet, b:CharSet) => RegExp
     union: (a: CharSet, b:CharSet) => RegExp
 }
-

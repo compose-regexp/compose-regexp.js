@@ -16,38 +16,38 @@ import {groupNameMatcher, suffixMatcher} from './regexps.js'
 
 // public API
 
-var empty = /(?:)/
-var never = /[]/
+const empty = /(?:)/
+const never = /[]/
 
 function throwIfNoLookBehind(name) {
 	if (!supportsLookBehind) throw new Error("no support for /(?<=...)/ which is required by " + name + "()")
 }
 
-export function either() {
-	if (!arguments.length) return never
+export function either(...args) {
+	if (args.length === 0) return never
     $$_resetRefCapsAndFlags()
-    return finalize(assemble(arguments, true, false, 0), {either: true})
+    return finalize(assemble(args, true, false, 0), {either: true})
 }
 
-function _sequence() {
-	return assemble(arguments, false, false, 0)
+function _sequence(...args) {
+	return assemble(args, false, false, 0)
 }
 
-export function sequence() {
-    if (!arguments.length) return empty
+export function sequence(...args) {
+    if (args.length === 0) return empty
     $$_resetRefCapsAndFlags()
-    return finalize(_sequence.apply(null, arguments))
+    return finalize(_sequence(...args))
 }
 
 function makeAssertion (before, direction, emptyFallback, gate, name) {
-	return function () {
+	return function (...args) {
 		if (gate != null) gate(name)
-		if (!arguments.length) return emptyFallback
-        var previousDir = $direction.current
+		if (!args.length) return emptyFallback
+        const previousDir = $direction.current
         $direction.current = direction
         try {
             $$_resetRefCapsAndFlags()
-            var result = _sequence.apply(null, arguments)
+            const result = _sequence(...args)
             return finalize(decorate(result, {open: before}), {direction: 0})
         } finally {
             $direction.current = previousDir
@@ -55,33 +55,33 @@ function makeAssertion (before, direction, emptyFallback, gate, name) {
 	}
 }
 
-export var lookAhead = makeAssertion('(?=', 1, empty)
-export var notAhead = makeAssertion('(?!', 1, never)
-export var lookBehind = makeAssertion('(?<=', -1, empty, throwIfNoLookBehind, "lookBehind")
-export var notBehind = makeAssertion('(?<!', -1, never, throwIfNoLookBehind, "notBehind")
+export const lookAhead = makeAssertion('(?=', 1, empty)
+export const notAhead = makeAssertion('(?!', 1, never)
+export const lookBehind = makeAssertion('(?<=', -1, empty, throwIfNoLookBehind, "lookBehind")
+export const notBehind = makeAssertion('(?<!', -1, never, throwIfNoLookBehind, "notBehind")
 
-var call = _suffix.call
+const call = _suffix.call
 
-function _suffix() {
+function _suffix(quantifier, ...args) {
 	// the quantifier is passed as context
 	$$_resetRefCapsAndFlags()
 	// a neat hack to pass all arguements but the operator to `_sequence()`
 	// without allocating an array. The operator is passed as `this` which is ignored.
-	if (arguments.length === 1) throw new SyntaxError("Suffix to an empty prefix")
-	var res = call.apply(_sequence, arguments)
-	return finalize(decorate(res, {condition: needsWrappingForQuantifier, open: '(?:', suffix: this}))
+	if (args.length === 0) throw new SyntaxError("Suffix to an empty prefix")
+	const res = _sequence(...args)
+	return finalize(decorate(res, {condition: needsWrappingForQuantifier, open: '(?:', suffix: quantifier}))
 }
 
-export function suffix(quantifier) {
+export function suffix(quantifier, ...args) {
 	if (typeof quantifier !== 'string') quantifier = '{' + String(quantifier) + '}'
-	var match = quantifier.match(suffixMatcher)
+	const match = quantifier.match(suffixMatcher)
 	if (!match || match[3] && Number(match[3]) < Number(match[2])) throw new SyntaxError("Invalid suffix '" + quantifier+ "'.")
-	return arguments.length === 1
-	? _suffix.bind(quantifier, quantifier)
-	: _suffix.apply(quantifier, arguments)
+	return args.length === 0
+	? _suffix.bind(null, quantifier)
+	: _suffix(quantifier, ...args)
 }
 
-export var maybe = suffix('?')
+export const maybe = suffix('?')
 
 
 // Named groups are AFAIK not supported in engines that don't support the u flag.
@@ -95,7 +95,7 @@ export function validateGroupName(name) {
 }
 
 function checkRef(name) {
-	var type = typeof name
+	const type = typeof name
 	return type === 'string' && validateGroupName(name)
 	|| type === 'number' && 0 < name && Math.round(name) === name
 }
@@ -104,7 +104,7 @@ export function ref(n, depth) {
 	if (!checkRef(n)) throw new SyntaxError("Bad ref: " + n)
 	if ((depth != null) && (typeof depth !== 'number' || depth < 1 || (depth !== depth|0))) throw new RangeError("Bad depth: " + depth)
     if (typeof n === 'string') return new RegExp('\\k<' + n + '>')
-	var result = new RegExp('$d:' + (depth || '0')+ ",n:" + n + "^")
+	const result = new RegExp('$d:' + (depth || '0')+ ",n:" + n + "^")
 	metadata.set(result, {
         direction: $direction.current,
         hasFinalRef: true,
@@ -113,24 +113,24 @@ export function ref(n, depth) {
 	return result
 }
 
-export function capture() {
+export function capture(...args) {
 	$$_resetRefCapsAndFlags()
-    var res = assemble(arguments, false, false, 1)
+    const res = assemble(args, false, false, 1)
 	return finalize(decorate(res, {open: '('}))
 }
 
-function _namedCapture(name) {
+function _namedCapture(name, ...args) {
 	if (typeof name !== 'string') throw new TypeError("String expected, got " + typeof name)
 	validateGroupName(name)
 	$$_resetRefCapsAndFlags()
-    var res = assemble(slice.call(arguments, 1), false, false, 1)
+    const res = assemble(args, false, false, 1)
     return finalize(decorate(res, {open: '(?<' + name + '>'}))
 }
 
-export function namedCapture(name) {
-	return (arguments.length === 1
+export function namedCapture(name, ...args) {
+	return (args.length === 0
 	? _namedCapture.bind(null, name)
-	: _namedCapture.apply(null, arguments))
+	: _namedCapture(name, ...args))
 }
 
 //- - - - - - - - - - - - - - - //
@@ -153,42 +153,42 @@ function flagAdd(a, b) {
 	return a.sort().join('')
 }
 
-function _flags(fl) {
+function _flags(fl, ...args) {
 	// the operation is passed as context
 	$$_resetRefCapsAndFlags()
     // flags.remove throws if passed 'u' so if present here, it is to be added and the engine should know
     // beforehand
 	if (fl.indexOf('u') !== -1) $flagValidator.U = true
 	// bad hack, see _suffix
-	var source = call.apply(_sequence, arguments)
-	return finalize(source, {flagsOp: this, flags: fl})
+	const source = _sequence(...args)
+	return finalize(source, {flagsOp: flagAdd, flags: fl})
 }
 
-export var flags = {add: function add(flags) {
+export const flags = {add: function add(flags, ...args) {
 	if (typeof flags !== 'string') throw TypeError("String expected as first argument, got " + typeof flags)
 	if (!flagsMatcher.test(flags)) throw new SyntaxError("Invalid flags: " + flags)
-	return arguments.length === 1
-	? _flags.bind(flagAdd, flags)
-	: _flags.apply(flagAdd, arguments)
+	return args.length === 0
+	? _flags.bind(null, flags)
+	: _flags(flags, ...args)
 }}
 
 
 // higher level functions
 
-export function atomic() {
+export function atomic(...args) {
     return $direction.current === 1
     // forward:
-    ? sequence(lookAhead(capture.apply(null, arguments)), ref(1))
+    ? sequence(lookAhead(capture(...args)), ref(1))
     // backward:
-    : sequence(ref(1), lookBehind(capture.apply(null, arguments)))
+    : sequence(ref(1), lookBehind(capture(...args)))
 }
 
-var allU = supportsU && new RegExp('[^]', 'u')
+const allU = supportsU && new RegExp('[^]', 'u')
 function csDiff(a, b) {return sequence(notAhead(b), a)}
 function csInter(a, b) {return sequence(lookAhead(b), a)}
 function csComplement(a) {return csDiff((supportsU && a.unicode) ? allU : /[^]/, a)}
 
-export var charSet = {
+export const charSet = {
 	difference: csDiff,
 	intersection: csInter,
 	complement: csComplement,

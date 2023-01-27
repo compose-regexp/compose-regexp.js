@@ -144,10 +144,11 @@ import {${Object.keys(output).sort().join(", ")}} from './regexps.js'
 import {supportsU} from './utils.js'
 
 ${
+    // kept for ES5 compat after compiling.
     Object.entries(output).sort().map(([name, rx]) => rx.unicode ? `
-var ${name} = supportsU && new RegExp(${JSON.stringify(rx.source)}, 'u')
+const ${name} = supportsU && new RegExp(${JSON.stringify(rx.source)}, 'u')
 `:`
-var ${name} = ${rx}
+const ${name} = ${rx}
 `
     ).join('\n')
 }

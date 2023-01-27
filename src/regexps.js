@@ -17,44 +17,44 @@ import {captureMatcher, dotMDotSMatcher, groupNameMatcher, loneBracketMatcher, m
 import {supportsU} from './utils.js'
 
 
-var captureMatcher = /\\[^]|\(\?(?::|<?[=!])|[\[\](]/g
+const captureMatcher = /\\[^]|\(\?(?::|<?[=!])|[\[\](]/g
 
 
-var dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?:\$\|\(\?=\[\\n\\r\\u2028\\u2029\]\)\)|\[|\]|\^|\$/g
+const dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?:\$\|\(\?=\[\\n\\r\\u2028\\u2029\]\)\)|\[|\]|\^|\$/g
 
 
-var groupNameMatcher = supportsU && new RegExp("^[_$\\p{ID_Start}][$\\p{ID_Continue}]*$", 'u')
+const groupNameMatcher = supportsU && new RegExp("^[_$\\p{ID_Start}][$\\p{ID_Continue}]*$", 'u')
 
 
-var loneBracketMatcher = /\\.|\{\d+,?\d*\}|(\[|\]|\{|\})/g
+const loneBracketMatcher = /\\.|\{\d+,?\d*\}|(\[|\]|\{|\})/g
 
 
-var mEndAnchor = /(?:$|(?=[\n\r\u2028\u2029]))/
+const mEndAnchor = /(?:$|(?=[\n\r\u2028\u2029]))/
 
 
-var mStartAnchor = /(?:^|(?<=[\n\r\u2028\u2029]))/
+const mStartAnchor = /(?:^|(?<=[\n\r\u2028\u2029]))/
 
 
-var numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\$d:(\d+),n:(\d+)\^/g
+const numRefMatcher = /\\[^1-9]|[\[\]]|\\(\d{1,2})|\$d:(\d+),n:(\d+)\^/g
 
 
-var oneEscapeOrCharClassMatcher = /^(?:\\.|\[(?:[^\]\\]|\\.)*\])$/
+const oneEscapeOrCharClassMatcher = /^(?:\\.|\[(?:[^\]\\]|\\.)*\])$/
 
 
-var pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/
+const pEscapeMatcher = /^\\p\{[A-Za-z][A-Za-z=]*\}$/
 
 
-var stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g
+const stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g
 
 
-var suffixMatcher = /^(?:[+*?]|\{(?=((\d+)))\1,?(\d*)\})\??$/
+const suffixMatcher = /^(?:[+*?]|\{(?=((\d+)))\1,?(\d*)\})\??$/
 
 
-var tokenMatcher = /(\\.)|[-()|\[\]]((?=\?<?[=!]))?/g
+const tokenMatcher = /(\\.)|[-()|\[\]]((?=\?<?[=!]))?/g
 
 
-var uProblemCharClassMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g
+const uProblemCharClassMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\([^.?*+^$[\]\\(){}|\/DSWdswfnrtv-])|(\\[DSWdsw]-[^\]]|.-\\[DSWdsw])|\\.|\]/g
 
 
-var uProblemDefaultMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g
+const uProblemDefaultMatcher = /\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\c[A-Za-z]|\\k<(.*?)>|\\([^.?*+^$[\]\\(){}|\/DSWdswBbfnrtv])|\\.|\.|\[\^\]|\[|(\((?:\?[^])?)|(\)(?:[+?*]|\{\d+,?\d*\})?)/g
 
