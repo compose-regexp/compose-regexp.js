@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.6.29
+
+*2023-01-30*
+
+- Docs: correct typo in the README ([#9](https://github.com/compose-regexp/compose-regexp.js/pull/9) [@Kawacrepe](https://github.com/Kawacrepe))
+
 ## v0.6.28
 
 *2023-01-27*
@@ -225,7 +231,7 @@ This version revamps the core to provide better support for the `u` flag. The `r
 
 ### Shout out
 
-... to [@Hypercubed](https://github.com/Hypercubed) who submitted a [PR](https://github.com/pygy/compose-regexp.js/pull/5) fo an issue that was solved independently.
+... to [@Hypercubed](https://github.com/Hypercubed) who submitted a [PR](https://github.com/pygy/compose-regexp.js/pull/5) for an issue that was solved independently.
 
 ## v0.5.3
 
