@@ -91,7 +91,7 @@ You can test it live on [flems.io](https://flems.io/#0=N4IgZglgNgpgziAXAbVAOwIYF
 
 ## Why you may need this lib
 
-Regular exprssions don't do justice to regular grammars.
+Regular expressions don't do justice to regular grammars.
 
 Complex RegExps hard to read, debug and modify. For code reuse, we often resort to source string concatenation which is error prone and even less readable than RegExp literals.
 
