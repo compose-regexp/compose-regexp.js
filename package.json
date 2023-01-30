@@ -50,7 +50,7 @@
 		"gosub": "1.1.0",
 		"ospec": "^4.1.4",
 		"rollup": "^3.11.0",
-		"stable-version": "npm:compose-regexp@0.6.28",
+		"stable-version": "npm:compose-regexp@0.6.29",
 		"terser": "^5.16.1"
 	},
 	"c8": {
