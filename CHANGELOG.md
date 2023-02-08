@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.6.30
+
+*2023-02-08*
+
+- Add a package.json file to the commonjs folder such that `require("compose-regexp")` works.
+
 ## v0.6.29
 
 *2023-01-30*
