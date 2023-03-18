@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.6.31
+
+*2023-03-19*
+
+- Avoid creating quantifiers by accident. Now `sequence(/a{/, /1}/)` returns `/a{(?:)1}/`. Fixes [#10](https://github.com/compose-regexp/compose-regexp.js/issues/10)
+
 ## v0.6.30
 
 *2023-02-08*
