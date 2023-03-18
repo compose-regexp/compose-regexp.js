@@ -103,7 +103,7 @@
 	const stringNormalizerMatcher = /[.?*+^$[\]\\(){}|]/g;
 
 
-	const suffixMatcher = /^(?:[+*?]|\{(?=((\d+)))\1,?(\d*)\})\??$/;
+	const suffixMatcher = /^(?:[+*?]|\{(\d+)(?:,(\d*))?\})\??$/;
 
 
 	const tokenMatcher = /(\\.)|[-()|\[\]]((?=\?<?[=!]))?/g;
@@ -286,6 +286,24 @@
 		metadata.set(x.key, 'hasFinalRef', hasFinalRef);
 		return hasRefs
 	});
+
+	const finalQuantifierMatcher = /\\\\|\\\{|(\{\d+(?:,\d*)?\}$)/g;
+	const badQuantifierMatcher = /^\d*(?:,\d*)?\}/;
+
+	function combinesAsQuantfier(x1, x2) {
+		// first look for a bad start in x2 since this is fast
+		const badStart = x2.source.match(badQuantifierMatcher);
+		if (badStart == null) return false
+		// Now scan the combination looking for a newly formed quantifier
+		const haystack = x1.source + badStart[0];
+		let result;
+		finalQuantifierMatcher.lastIndex = 0;
+		while (result = finalQuantifierMatcher.exec(haystack)) {
+			if (result[1] != null) return true
+		}
+		return false
+	}
+
 
 	// When composing expressions into a sequence, regexps that have a top-level
 	// choice operator must be wrapped in a non-capturing group. This function
@@ -517,10 +535,10 @@
 				&& hasRefs(x1)
 				&& metadata.get(x1.key, 'hasFinalRef')
 				&& (/^\d/.test(x2.source))
+				|| combinesAsQuantfier(x1, x2)
 				? '(?:)'
 				: ''
 			) + x2.source;
-
 			return x2
 		}
 	}
@@ -721,7 +739,7 @@
 	function suffix(quantifier, ...args) {
 		if (typeof quantifier !== 'string') quantifier = '{' + String(quantifier) + '}';
 		const match = quantifier.match(suffixMatcher);
-		if (!match || match[3] && Number(match[3]) < Number(match[2])) throw new SyntaxError("Invalid suffix '" + quantifier+ "'.")
+		if (!match || match[2] && Number(match[2]) < Number(match[1])) throw new SyntaxError("Invalid suffix '" + quantifier+ "'.")
 		return args.length === 0
 		? _suffix.bind(null, quantifier)
 		: _suffix(quantifier, ...args)
