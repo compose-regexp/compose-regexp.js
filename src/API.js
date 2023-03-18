@@ -75,7 +75,7 @@ function _suffix(quantifier, ...args) {
 export function suffix(quantifier, ...args) {
 	if (typeof quantifier !== 'string') quantifier = '{' + String(quantifier) + '}'
 	const match = quantifier.match(suffixMatcher)
-	if (!match || match[3] && Number(match[3]) < Number(match[2])) throw new SyntaxError("Invalid suffix '" + quantifier+ "'.")
+	if (!match || match[2] && Number(match[2]) < Number(match[1])) throw new SyntaxError("Invalid suffix '" + quantifier+ "'.")
 	return args.length === 0
 	? _suffix.bind(null, quantifier)
 	: _suffix(quantifier, ...args)
