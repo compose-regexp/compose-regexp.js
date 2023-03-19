@@ -436,7 +436,7 @@
 			} else {
 				if (result[1] === '[') inCClass = true;
 				else if (result[1] === ']') continue
-				else return true
+				else return result[1]
 			}
 		}
 		return false
