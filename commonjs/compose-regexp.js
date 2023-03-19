@@ -82,7 +82,7 @@
 	const groupNameMatcher = supportsU && new RegExp("^[_$\\p{ID_Start}][$\\p{ID_Continue}]*$", 'u');
 
 
-	const loneBracketMatcher = /\\.|\{\d+,?\d*\}|(\[|\]|\{|\})/g;
+	const loneBracketMatcher = /\\.|\{\d+(?:,\d*)?\}|(\[|\]|\{|\})/g;
 
 
 	const mEndAnchor = /(?:$|(?=[\n\r\u2028\u2029]))/;
@@ -287,24 +287,6 @@
 		return hasRefs
 	});
 
-	const finalQuantifierMatcher = /\\\\|\\\{|(\{\d+(?:,\d*)?\}$)/g;
-	const badQuantifierMatcher = /^\d*(?:,\d*)?\}/;
-
-	function combinesAsQuantfier(x1, x2) {
-		// first look for a bad start in x2 since this is fast
-		const badStart = x2.source.match(badQuantifierMatcher);
-		if (badStart == null) return false
-		// Now scan the combination looking for a newly formed quantifier
-		const haystack = x1.source + badStart[0];
-		let result;
-		finalQuantifierMatcher.lastIndex = 0;
-		while (result = finalQuantifierMatcher.exec(haystack)) {
-			if (result[1] != null) return true
-		}
-		return false
-	}
-
-
 	// When composing expressions into a sequence, regexps that have a top-level
 	// choice operator must be wrapped in a non-capturing group. This function
 	// detects whether the group is needed or not.
@@ -444,6 +426,29 @@
 		}
 	}
 
+	const hasLoneQuantifierBracket = mdMemo('hasLoneQuantifierBracket', function hasLoneQuantifierBracket(x) {
+		let result, inCClass = false;
+		loneBracketMatcher.lastIndex = 0;
+		while (result = loneBracketMatcher.exec(x.source)) {
+			if (result[1] == null) continue
+			if (inCClass) {
+				if (result[1] === ']') inCClass = false;
+			} else {
+				if (result[1] === '[') inCClass = true;
+				else if (result[1] === ']') continue
+				else return true
+			}
+		}
+		return false
+	});
+
+	function rejectLoneBracket(x) {
+		if (x == null || x.kind !== 'regexp' || x.key.unicode) return x
+		const bracket = hasLoneQuantifierBracket(x);
+		if (bracket === false) return x
+		throw new SyntaxError(`Lone quantifier bracket ${bracket} in /${x.source}/${x.key.flags}`)
+	}
+
 	function fixForFlags(x) {
 		const source = x.source;
 		if ($flagValidator.U && (x.kind === 'regexp' && !x.key.unicode || x.kind === 'result' && !metadata.get(x.key, 'unicode'))) {
@@ -535,7 +540,6 @@
 				&& hasRefs(x1)
 				&& metadata.get(x1.key, 'hasFinalRef')
 				&& (/^\d/.test(x2.source))
-				|| combinesAsQuantfier(x1, x2)
 				? '(?:)'
 				: ''
 			) + x2.source;
@@ -628,17 +632,21 @@
 					Array.isArray(item) ? assemble(item, false, contextRequiresWrapping, 0)
 					// thunks are materialized downstream
 					: typeof item === 'function' ? processItem($$_reentrantRefCapFlag(item))
-					: (item instanceof RegExpRef) ? $$_checkDirection($$_checkFlags({
+					: (item instanceof RegExpRef) ? rejectLoneBracket($$_checkDirection($$_checkFlags({
 						key: item,
 						kind: 'regexp',
 						source: getSource(item)
-					}))
+					})))
 					: handleOtherTypes(item)
 				)
-			// fixForFlags and $$_fixRefs can't be inlined in the first mat, above they rely on side effects of the
-			// `check` functions having all happenned before they run.
-			// at best they could be combined into a single function.
-		}).map(fixForFlags).map($$_fixRefs(initialCapIndex)).reduceRight(join(either), {
+			// fixForFlags and $$_fixRefs can't be combined in the map() calback above,
+			// as they rely on side effects of the `check` functions having all happenned
+			// before they themselves run.
+			// At best they could be combined into a single function, but it would hamper clarity.
+		})
+		.map(fixForFlags)
+		.map($$_fixRefs(initialCapIndex))
+		.reduceRight(join(either), {
 			key: metadata.set(null, Object.assign({
 				direction: $refAndCap.hasRefs ? $direction.current : 0,
 				isDisjunction: either && (
