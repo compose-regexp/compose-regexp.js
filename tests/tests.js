@@ -468,9 +468,6 @@ o.spec("flags", function () {
 
 			o(sequence(/a/u, /\[^]/))
 			.satisfies(r(/a\[^\]/u))
-
-			
-
 		})
 
 
@@ -545,39 +542,9 @@ o.spec("flags", function () {
 
 
 		})
-		o("lone brackets are automatically escaped", function() {
-			o(sequence(/]/, /a/u)).satisfies(r(/\]a/u))
-
-			o(sequence(/}/, /a/u)).satisfies(r(/\}a/u))
-
-			o(sequence(/{/, /a/u)).satisfies(r(/\{a/u))
-
-			o(sequence(/a{1}/, /a/u)).satisfies(r(/a{1}a/u))
-
-			o(sequence(/a{1,}/, /a/u)).satisfies(r(/a{1,}a/u))
-
-			o(sequence(/a{1,1}/, /a/u)).satisfies(r(/a{1,1}a/u))
-
-			o(sequence(/a{12}/, /a/u)).satisfies(r(/a{12}a/u))
-
-			o(sequence(/a{12,}/, /a/u)).satisfies(r(/a{12,}a/u))
-
-			o(sequence(/a{12,12}/, /a/u)).satisfies(r(/a{12,12}a/u))
-
-			o(sequence(/\{1}/, /a/u)).satisfies(r(/\{1\}a/u))
-
-			o(sequence(/\{1,}/, /a/u)).satisfies(r(/\{1,\}a/u))
-
-			o(sequence(/\{1,1}/, /a/u)).satisfies(r(/\{1,1\}a/u))
-
-			o(sequence(/\{12}/, /a/u)).satisfies(r(/\{12\}a/u))
-
-			o(sequence(/\{12,}/, /a/u)).satisfies(r(/\{12,\}a/u))
-
-			o(sequence(/\{12,12}/, /a/u)).satisfies(r(/\{12,12\}a/u))
-
-			o(sequence(/[[]/, /a/u)).satisfies(r(/[[]a/u))
-
+		o("lone brackets are rejected even in non-unicode context", function() {
+			o(()=>sequence(/{/, 'x')).throws(SyntaxError)
+			o(()=>sequence('x', /}/)).throws(SyntaxError)
 		})
 
 		o("No unnecessary escapes", function () {
@@ -794,57 +761,6 @@ o.spec("refs", function () {
 
 	})
 
-	o("marformed range quantifiers are handled properly", function() {
-		o(sequence(/a{1/, /}/)).satisfies(r(/a{1(?:)}/))
-		o(sequence(/a{/, /1}/)).satisfies(r(/a{(?:)1}/))
-		o(sequence(/a{/, /1,}/)).satisfies(r(/a{(?:)1,}/))
-		o(sequence(/a{/, /1,12}/)).satisfies(r(/a{(?:)1,12}/))
-
-		o(sequence(/{1/, /}/)).satisfies(r(/{1(?:)}/))
-		o(sequence(/{/, /1}/)).satisfies(r(/{(?:)1}/))
-		o(sequence(/{/, /1,}/)).satisfies(r(/{(?:)1,}/))
-		o(sequence(/{/, /1,12}/)).satisfies(r(/{(?:)1,12}/))
-
-		// also works when the quantifier is spread in more that two pieces
-		o(sequence(/a{/, "1", /}/)).satisfies(r(/a{(?:)1}/))
-		o(sequence(/a{/, "1", /,/, /}/)).satisfies(r(/a{(?:)1,}/))
-		o(sequence(/a{/, "1", /,/, "2", /}/)).satisfies(r(/a{(?:)1,2}/))
-
-		// once again with the partial quantifier in non-terminal position
-		o(sequence(/a{1/, /}a/)).satisfies(r(/a{1(?:)}a/))
-		o(sequence(/a{/, /1}a/)).satisfies(r(/a{(?:)1}a/))
-		o(sequence(/a{/, /1,}a/)).satisfies(r(/a{(?:)1,}a/))
-		o(sequence(/a{/, /1,12}a/)).satisfies(r(/a{(?:)1,12}a/))
-
-		o(sequence(/{1/, /}a/)).satisfies(r(/{1(?:)}a/))
-		o(sequence(/{/, /1}a/)).satisfies(r(/{(?:)1}a/))
-		o(sequence(/{/, /1,}a/)).satisfies(r(/{(?:)1,}a/))
-		o(sequence(/{/, /1,12}a/)).satisfies(r(/{(?:)1,12}a/))
-
-		o(sequence(/a{/, "1", /}a/)).satisfies(r(/a{(?:)1}a/))
-		o(sequence(/a{/, "1", /,/, /}a/)).satisfies(r(/a{(?:)1,}a/))
-		o(sequence(/a{/, "1", /,/, "2", /}a/)).satisfies(r(/a{(?:)1,2}a/))
-
-
-		// no false positives:
-		o(sequence(/a{1/, 'x')).satisfies(r(/a{1x/))
-		o(sequence(/a{1,/, 'x')).satisfies(r(/a{1,x/))
-		o(sequence(/a{1,2/, 'x')).satisfies(r(/a{1,2x/))
-
-		o(sequence(/a{/,'x')).satisfies(r(/a{x/))
-		o(sequence(/a{1/,'x')).satisfies(r(/a{1x/))
-		o(sequence(/a{1,/,'x')).satisfies(r(/a{1,x/))
-		o(sequence(/a{1,2/,'x')).satisfies(r(/a{1,2x/))
-
-		o(sequence("x", /}/)).satisfies(r(/x}/))
-		o(sequence("x", /1}/)).satisfies(r(/x1}/))
-		o(sequence("x", /1,}/)).satisfies(r(/x1,}/))
-		o(sequence("x",/1,12}/)).satisfies(r(/x1,12}/))
-
-		o(sequence("{", /}/)).satisfies(r(/\{}/))
-		o(sequence(/{/, /}/)).satisfies(r(/{}/))
-		o(sequence(/a\{/,'1', /}/)).satisfies(r(/a\{1}/))
-	})
 
 	o("refs in groups", function() {
 		o(sequence(

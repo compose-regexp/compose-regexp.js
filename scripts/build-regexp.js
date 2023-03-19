@@ -32,12 +32,14 @@ output.dotMDotSMatcher = flags.add('g', either(
     '[', ']', '^', '$'
 ))
 
+
 output.groupNameMatcher = /^[_$\p{ID_Start}][$\p{ID_Continue}]*$/u
+
 
 output.loneBracketMatcher = flags.add('g', either(
     ['\\', /./],
-    ['{', /\d+,?\d*/, '}'],
-    capture(either('[', ']', '{', '}'))
+    ['{', /\d+/, maybe(",", /\d*/), '}'],
+    capture(either("[", "]", "{", "}"))
 ))
 
 output.numRefMatcher = flags.add('g', either(

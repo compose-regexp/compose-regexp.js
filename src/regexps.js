@@ -26,7 +26,7 @@ const dotMDotSMatcher = /\\.|\.|\(\?:\^\|\(\?<=\[\\n\\r\\u2028\\u2029\]\)\)|\(\?
 const groupNameMatcher = supportsU && new RegExp("^[_$\\p{ID_Start}][$\\p{ID_Continue}]*$", 'u')
 
 
-const loneBracketMatcher = /\\.|\{\d+,?\d*\}|(\[|\]|\{|\})/g
+const loneBracketMatcher = /\\.|\{\d+(?:,\d*)?\}|(\[|\]|\{|\})/g
 
 
 const mEndAnchor = /(?:$|(?=[\n\r\u2028\u2029]))/
