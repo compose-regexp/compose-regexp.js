@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.7.1
+
+*2023-03-19*
+
+- Fix the error message for lone quantifier brackets
+
 ## v0.7.0
 
 *2023-03-19*
