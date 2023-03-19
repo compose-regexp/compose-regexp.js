@@ -544,7 +544,9 @@ o.spec("flags", function () {
 		})
 		o("lone brackets are rejected even in non-unicode context", function() {
 			o(()=>sequence(/{/, 'x')).throws(SyntaxError)
+			o(()=>sequence(/{/, 'x')).throws("Lone quantifier bracket { in /{/")
 			o(()=>sequence('x', /}/)).throws(SyntaxError)
+			o(()=>sequence('x', /}/)).throws("Lone quantifier bracket } in /}/")
 		})
 
 		o("No unnecessary escapes", function () {
